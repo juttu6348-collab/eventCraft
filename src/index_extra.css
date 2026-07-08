@@ -1,0 +1,19 @@
+/* Additional Refactored Utilities */
+
+/* Setup Steps Circle Numbers */
+.step-circle-number {
+    width: 80px;
+    height: 80px;
+    border-radius: 50%;
+    background: var(--gradient-pink-purple);
+    box-shadow: 0 10px 30px rgba(233, 30, 99, 0.3);
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+}
+
+/* Glass Search Container */
+.glass-search-container {
+    padding: 1.5rem;
+    margin-bottom: 1.5rem;
+}

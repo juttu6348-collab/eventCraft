@@ -1,0 +1,568 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>EventCraft - Project Report</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            line-height: 1.6;
+            color: #333;
+            background: #fff;
+            max-width: 1200px;
+            margin: 0 auto;
+            padding: 40px 60px;
+        }
+
+        .cover-page {
+            text-align: center;
+            padding: 100px 0;
+            page-break-after: always;
+        }
+
+        .cover-page h1 {
+            font-size: 3em;
+            color: #2c3e50;
+            margin-bottom: 20px;
+        }
+
+        .cover-page h2 {
+            font-size: 1.8em;
+            color: #7f8c8d;
+            margin-bottom: 60px;
+            font-weight: normal;
+        }
+
+        .team-info {
+            margin: 80px 0 40px 0;
+        }
+
+        .team-info h3 {
+            font-size: 1.5em;
+            color: #2c3e50;
+            margin-bottom: 30px;
+        }
+
+        .team-info p {
+            font-size: 1.1em;
+            margin: 10px 0;
+            color: #555;
+        }
+
+        .team-member {
+            font-weight: 600;
+            color: #2980b9;
+        }
+
+        h1 {
+            color: #2c3e50;
+            font-size: 2.5em;
+            margin: 40px 0 20px 0;
+            padding-bottom: 10px;
+            border-bottom: 3px solid #3498db;
+            page-break-before: always;
+        }
+
+        h2 {
+            color: #34495e;
+            font-size: 1.8em;
+            margin: 30px 0 15px 0;
+        }
+
+        h3 {
+            color: #34495e;
+            font-size: 1.4em;
+            margin: 25px 0 12px 0;
+        }
+
+        p {
+            margin: 15px 0;
+            text-align: justify;
+        }
+
+        ul,
+        ol {
+            margin: 15px 0 15px 30px;
+        }
+
+        li {
+            margin: 8px 0;
+        }
+
+        .screenshot-container {
+            margin: 30px 0;
+            text-align: center;
+            page-break-inside: avoid;
+        }
+
+        .screenshot-container img {
+            max-width: 100%;
+            height: auto;
+            border: 1px solid #ddd;
+            border-radius: 8px;
+            box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+        }
+
+        .screenshot-caption {
+            font-style: italic;
+            color: #7f8c8d;
+            margin-top: 10px;
+            font-size: 0.95em;
+        }
+
+        .highlight-box {
+            background: #ecf0f1;
+            border-left: 4px solid #3498db;
+            padding: 20px;
+            margin: 20px 0;
+            border-radius: 4px;
+        }
+
+        .achievement-list {
+            background: #f8f9fa;
+            padding: 20px 20px 20px 40px;
+            border-radius: 8px;
+            margin: 15px 0;
+        }
+
+        .tech-stack {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 20px;
+            margin: 20px 0;
+        }
+
+        .tech-column {
+            background: #f8f9fa;
+            padding: 20px;
+            border-radius: 8px;
+        }
+
+        .tech-column h3 {
+            color: #2980b9;
+            margin-top: 0;
+        }
+
+        table {
+            width: 100%;
+            border-collapse: collapse;
+            margin: 20px 0;
+        }
+
+        th,
+        td {
+            padding: 12px;
+            text-align: left;
+            border-bottom: 1px solid #ddd;
+        }
+
+        th {
+            background: #3498db;
+            color: white;
+        }
+
+        .page-break {
+            page-break-after: always;
+        }
+
+        @media print {
+            body {
+                padding: 20px;
+            }
+
+            .page-break,
+            h1 {
+                page-break-before: always;
+            }
+
+            .screenshot-container {
+                page-break-inside: avoid;
+            }
+        }
+
+        .signature-section {
+            margin-top: 60px;
+        }
+
+        .signature-line {
+            margin: 30px 0;
+            border-bottom: 1px solid #000;
+            width: 300px;
+        }
+    </style>
+</head>
+
+<body>
+
+    <!-- COVER PAGE -->
+    <div class="cover-page">
+        <h1>EventCraft</h1>
+        <h2>Event Management & Celebration Platform</h2>
+
+        <div class="team-info">
+            <h3>Project Report</h3>
+            <p><strong>Course:</strong> Web Development / Database Systems</p>
+
+            <p style="margin-top: 40px;"><strong>Submitted By:</strong></p>
+            <p class="team-member">Muhammad Jawad Rehmat Qureshi (Roll No: 3323)</p>
+            <p class="team-member">Muhammad Usman (Roll No: 3288)</p>
+            <p class="team-member">Hamza Saeed (Roll No: 3321)</p>
+
+            <p style="margin-top: 60px;"><strong>Submission Date:</strong> December 2025</p>
+        </div>
+    </div>
+
+    <!-- EXECUTIVE SUMMARY -->
+    <h1>Executive Summary</h1>
+
+    <p>EventCraft is a comprehensive web-based event management platform designed to create, customize, and share
+        personalized celebration pages for various occasions including birthdays, weddings, anniversaries, and more. The
+        platform provides users with an intuitive interface to craft memorable digital experiences with custom themes,
+        photo galleries, and interactive features.</p>
+
+    <p>This project demonstrates modern full-stack web development practices using React for the frontend and
+        Node.js/Express with MySQL for the backend, showcasing secure authentication mechanisms, efficient database
+        management, and RESTful API design.</p>
+
+    <h2>Key Achievements</h2>
+    <div class="achievement-list">
+        <ul>
+            <li><strong>Full-Stack Application:</strong> Complete React frontend with Node.js/Express backend</li>
+            <li><strong>Relational Database:</strong> Well-designed MySQL database schema with proper normalization</li>
+            <li><strong>Secure Authentication:</strong> JWT-based authentication system with bcrypt password hashing
+            </li>
+            <li><strong>Rich Feature Set:</strong> Event creation, photo uploads, customizable themes, admin dashboard
+            </li>
+            <li><strong>Responsive Design:</strong> Mobile-friendly interface with modern UI/UX</li>
+            <li><strong>RESTful API:</strong> Comprehensive API with proper error handling and validation</li>
+        </ul>
+    </div>
+
+    <!-- INTRODUCTION -->
+    <h1>Introduction</h1>
+
+    <h2>Background</h2>
+    <p>In today's digital age, celebrating special moments has evolved beyond physical cards and gatherings. People seek
+        creative, personalized ways to express their emotions and commemorate important events. EventCraft addresses
+        this need by providing a platform where users can create beautiful, shareable digital celebration pages.</p>
+
+    <h2>Problem Statement</h2>
+    <p>Traditional greeting cards and physical invitations have limitations:</p>
+    <ul>
+        <li>Limited customization options</li>
+        <li>High costs for professional designs</li>
+        <li>Difficulty in sharing with distant friends and family</li>
+        <li>No interactive or multimedia capabilities</li>
+        <li>Environmental concerns with paper waste</li>
+    </ul>
+
+    <h2>Solution</h2>
+    <p>EventCraft solves these problems by offering:</p>
+    <ul>
+        <li><strong>Digital Platform:</strong> No physical materials needed</li>
+        <li><strong>Unlimited Customization:</strong> Multiple themes, colors, and layouts</li>
+        <li><strong>Multimedia Support:</strong> Photo galleries, custom messages, and interactive elements</li>
+        <li><strong>Easy Sharing:</strong> Shareable links for instant access</li>
+        <li><strong>Cost-Effective:</strong> Free basic features with premium options</li>
+        <li><strong>Eco-Friendly:</strong> Completely digital solution</li>
+    </ul>
+
+    <!-- TECHNOLOGIES USED -->
+    <h1>Technologies Used</h1>
+
+    <div class="tech-stack">
+        <div class="tech-column">
+            <h3>Frontend Technologies</h3>
+            <ul>
+                <li>Framework: React 19.0.0</li>
+                <li>Build Tool: Vite 7.2.4</li>
+                <li>Routing: React Router DOM 7.10.1</li>
+                <li>HTTP Client: Axios 1.6.2</li>
+                <li>UI Framework: Bootstrap 5.3.8</li>
+                <li>Styling: SASS, CSS3</li>
+                <li>Animations: Framer Motion</li>
+                <li>Icons: Lucide React</li>
+                <li>State Management: React Context API</li>
+            </ul>
+        </div>
+
+        <div class="tech-column">
+            <h3>Backend Technologies</h3>
+            <ul>
+                <li>Runtime: Node.js</li>
+                <li>Framework: Express.js</li>
+                <li>Database: MySQL 8.0+</li>
+                <li>Authentication: JWT</li>
+                <li>Password Hashing: bcryptjs</li>
+                <li>File Upload: Multer</li>
+                <li>CORS: cors middleware</li>
+                <li>Environment: dotenv</li>
+            </ul>
+        </div>
+    </div>
+
+    <!-- APPLICATION SCREENSHOTS -->
+    <h1>Application Screenshots</h1>
+
+    <h2>1. Homepage & Landing Page</h2>
+
+    <div class="screenshot-container">
+        <img src="screenshots/homepage_hero.png" alt="Homepage Initial Load">
+        <p class="screenshot-caption">Figure 1.1: EventCraft homepage with hero section and feature highlights (Dark
+            Mode)</p>
+    </div>
+
+    <div class="screenshot-container">
+        <img src="screenshots/homepage_light.png" alt="Homepage Light Mode">
+        <p class="screenshot-caption">Figure 1.2: EventCraft homepage in light mode showing responsive design</p>
+    </div>
+
+    <div class="screenshot-container">
+        <img src="screenshots/homepage_user.png" alt="Logged In Homepage">
+        <p class="screenshot-caption">Figure 1.3: Homepage view after successful user login</p>
+    </div>
+
+    <div class="page-break"></div>
+
+    <h2>2. Authentication System</h2>
+
+    <div class="screenshot-container">
+        <img src="screenshots/login_form.png" alt="Login Page">
+        <p class="screenshot-caption">Figure 2.1: Login page with email/password authentication and guest login option
+        </p>
+    </div>
+
+    <div class="screenshot-container">
+        <img src="screenshots/signup_form.png" alt="Signup Page">
+        <p class="screenshot-caption">Figure 2.2: User registration form with validation</p>
+    </div>
+
+    <div class="screenshot-container">
+        <img src="screenshots/signup_filled.png" alt="Filled Signup Form">
+        <p class="screenshot-caption">Figure 2.3: Completed signup form ready for submission</p>
+    </div>
+
+    <div class="page-break"></div>
+
+    <h2>3. Event Creation & Management</h2>
+
+    <div class="screenshot-container">
+        <img src="screenshots/create_event_form.png" alt="Event Creation Form">
+        <p class="screenshot-caption">Figure 3.1: Event creation form with all required details filled in</p>
+    </div>
+
+    <div class="screenshot-container">
+        <img src="screenshots/creation_success.png" alt="Event Created Success">
+        <p class="screenshot-caption">Figure 3.2: Success confirmation message after event creation</p>
+    </div>
+
+    <div class="page-break"></div>
+
+    <h2>4. Event Microsite</h2>
+
+    <div class="screenshot-container">
+        <img src="screenshots/microsite_home.png" alt="Event Microsite Home">
+        <p class="screenshot-caption">Figure 4.1: Event microsite home page with elegant theme</p>
+    </div>
+
+    <div class="screenshot-container">
+        <img src="screenshots/microsite_full.png" alt="Event Microsite Full View">
+        <p class="screenshot-caption">Figure 4.2: Complete event microsite with detailed information and navigation</p>
+    </div>
+
+    <div class="screenshot-container">
+        <img src="screenshots/microsite_details.png" alt="Event Microsite Details">
+        <p class="screenshot-caption">Figure 4.3: Event details and photo gallery section</p>
+    </div>
+
+    <div class="page-break"></div>
+
+    <h2>5. User Dashboard</h2>
+
+    <div class="screenshot-container">
+        <img src="screenshots/user_dashboard.png" alt="User Dashboard">
+        <p class="screenshot-caption">Figure 5.1: User dashboard showing all created events with quick actions and
+            statistics</p>
+    </div>
+
+    <div class="page-break"></div>
+
+    <h2>6. Admin Panel</h2>
+
+    <div class="screenshot-container">
+        <img src="screenshots/admin_overview.png" alt="Admin Panel Overview">
+        <p class="screenshot-caption">Figure 6.1: Admin panel with platform statistics and management tools</p>
+    </div>
+
+    <div class="screenshot-container">
+        <img src="screenshots/admin_stats.png" alt="Admin Dashboard Overview">
+        <p class="screenshot-caption">Figure 6.2: Admin dashboard showing total users, events, and views</p>
+    </div>
+
+    <div class="screenshot-container">
+        <img src="screenshots/admin_users.png" alt="User Management">
+        <p class="screenshot-caption">Figure 6.3: User management panel with role controls and status indicators</p>
+    </div>
+
+    <div class="screenshot-container">
+        <img src="screenshots/admin_events.png" alt="Event Management">
+        <p class="screenshot-caption">Figure 6.4: Event management panel for admin oversight</p>
+    </div>
+
+    <div class="page-break"></div>
+
+    <!-- FEATURES -->
+    <h1>Key Features</h1>
+
+    <h2>1. User Authentication & Authorization</h2>
+    <ul>
+        <li>Email and password-based signup with validation</li>
+        <li>Secure email/password authentication with JWT tokens</li>
+        <li>Guest mode with limited features (3 events, 30-day limit)</li>
+        <li>Role-based access control (User, Guest, Admin)</li>
+        <li>Guest account conversion to full account</li>
+    </ul>
+
+    <h2>2. Event Creation & Management</h2>
+    <ul>
+        <li>Multi-step event creation wizard</li>
+        <li>Multiple event types (Birthday, Wedding, Anniversary, Graduation, etc.)</li>
+        <li>Custom themes and color schemes</li>
+        <li>Photo gallery with drag-and-drop upload</li>
+        <li>Customizable page sections</li>
+        <li>Unique shareable URLs for each event</li>
+        <li>Event duplication, editing, and deletion</li>
+        <li>Favorite events marking</li>
+    </ul>
+
+    <h2>3. User Dashboard</h2>
+    <ul>
+        <li>Grid view of all created events</li>
+        <li>Quick actions (Edit, Duplicate, Delete)</li>
+        <li>Event statistics (Views, Shares)</li>
+        <li>Search and filter functionality</li>
+        <li>Bulk operations support</li>
+    </ul>
+
+    <h2>4. Admin Panel</h2>
+    <ul>
+        <li>User management (View, Update role, Suspend, Delete)</li>
+        <li>Event management across platform</li>
+        <li>Platform statistics and analytics</li>
+        <li>Bulk operations for users and events</li>
+    </ul>
+
+    <!-- DATABASE DESIGN -->
+    <h1>Database Design</h1>
+
+    <p>The application uses a well-structured MySQL database with the following tables:</p>
+
+    <div class="highlight-box">
+        <h3>Database Tables</h3>
+        <ul>
+            <li><strong>users:</strong> Stores user account information and authentication credentials</li>
+            <li><strong>events:</strong> Stores event details, themes, and configuration</li>
+            <li><strong>event_photos:</strong> Manages photo galleries for each event</li>
+            <li><strong>event_stats:</strong> Tracks analytics (views, shares) for events</li>
+            <li><strong>custom_pages:</strong> Stores custom content pages for events</li>
+        </ul>
+    </div>
+
+    <p>The database schema implements proper foreign key relationships with CASCADE and SET NULL strategies for data
+        integrity. All passwords are hashed using bcryptjs with salt rounds for maximum security.</p>
+
+    <!-- SECURITY FEATURES -->
+    <h1>Security Implementation</h1>
+
+    <h2>Authentication Security</h2>
+    <ul>
+        <li><strong>JWT Tokens:</strong> 7-day expiration with secure signing</li>
+        <li><strong>Password Hashing:</strong> bcrypt with 10 salt rounds</li>
+        <li><strong>CORS Protection:</strong> Configured for localhost development with whitelist</li>
+        <li><strong>Input Validation:</strong> Server-side validation for all user inputs</li>
+        <li><strong>SQL Injection Prevention:</strong> Parameterized queries using mysql2</li>
+    </ul>
+
+    <!-- CHALLENGES -->
+    <h1>Challenges and Solutions</h1>
+
+    <h2>1. Database Migration from Firebase to MySQL</h2>
+    <div class="highlight-box">
+        <p><strong>Challenge:</strong> Migrating from Firebase's NoSQL structure to a relational MySQL database while
+            maintaining data integrity.</p>
+        <p><strong>Solution:</strong> Designed a normalized MySQL schema with proper foreign key relationships and
+            created comprehensive migration scripts.</p>
+    </div>
+
+    <h2>2. Image Upload and Storage</h2>
+    <div class="highlight-box">
+        <p><strong>Challenge:</strong> Handling multiple image uploads efficiently and serving them with proper caching.
+        </p>
+        <p><strong>Solution:</strong> Implemented Multer middleware for multipart form data with file type validation
+            and Express static file serving.</p>
+    </div>
+
+    <h2>3. CORS Configuration</h2>
+    <div class="highlight-box">
+        <p><strong>Challenge:</strong> Managing Cross-Origin Resource Sharing for multiple frontend ports during
+            development.</p>
+        <p><strong>Solution:</strong> Configured dynamic origin validation with whitelist for ports 5173 and 5174.</p>
+    </div>
+
+    <!-- CONCLUSION -->
+    <h1>Conclusion</h1>
+
+    <h2>Project Summary</h2>
+    <p>EventCraft successfully demonstrates the implementation of a modern, full-stack web application with robust
+        features and secure architecture. The project showcases technical proficiency in full-stack development,
+        database design, RESTful API development, and modern authentication systems.</p>
+
+    <h2>Learning Outcomes</h2>
+    <p>Through this project, the team gained valuable experience in:</p>
+    <ul>
+        <li><strong>Frontend Development:</strong> React hooks, context API, component architecture</li>
+        <li><strong>Backend Development:</strong> Express.js, RESTful API design, middleware implementation</li>
+        <li><strong>Database Management:</strong> MySQL schema design, query optimization, relational modeling</li>
+        <li><strong>Security:</strong> JWT authentication, password hashing, input validation</li>
+        <li><strong>DevOps:</strong> Environment configuration, deployment considerations</li>
+        <li><strong>Team Collaboration:</strong> Code organization, documentation, task division</li>
+    </ul>
+
+    <h2>Project Impact</h2>
+    <p>EventCraft provides a practical solution for creating personalized digital celebrations, offering:</p>
+    <ul>
+        <li>Cost-effective alternative to physical cards</li>
+        <li>Eco-friendly digital solution</li>
+        <li>Enhanced shareability and accessibility</li>
+        <li>Customizable and creative platform</li>
+    </ul>
+
+    <!-- DECLARATION -->
+    <h1>Declaration</h1>
+
+    <p>We hereby declare that this project is our original work and has been completed as part of our academic
+        curriculum. All sources and references have been properly cited.</p>
+
+    <div class="signature-section">
+        <p><strong>Signatures:</strong></p>
+        <br><br>
+        <p>Muhammad Jawad Rehmat Qureshi (3323) _____________________</p>
+        <br><br>
+        <p>Muhammad Usman (3288) _____________________</p>
+        <br><br>
+        <p>Hamza Saeed (3321) _____________________</p>
+        <br><br>
+        <p><strong>Date:</strong> December 2025</p>
+    </div>
+
+</body>
+
+</html>

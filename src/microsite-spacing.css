@@ -1,0 +1,391 @@
+/* Enhanced Microsite Spacing & Layout */
+
+/* Consistent padding for all microsite pages */
+.microsite-container>div {
+    padding: 4rem 1.5rem;
+    min-height: 100vh;
+}
+
+@media (min-width: 768px) {
+    .microsite-container>div {
+        padding: 5rem 2rem;
+    }
+}
+
+@media (min-width: 1200px) {
+    .microsite-container>div {
+        padding: 6rem 3rem;
+    }
+}
+
+/* Glass Card Spacing */
+.glass-card {
+    padding: 2rem;
+    margin-bottom: 2rem;
+}
+
+@media (min-width: 768px) {
+    .glass-card {
+        padding: 2.5rem;
+        margin-bottom: 2.5rem;
+    }
+}
+
+@media (min-width: 1200px) {
+    .glass-card {
+        padding: 3rem;
+        margin-bottom: 3rem;
+    }
+}
+
+/* Section Spacing */
+.section-spacing {
+    margin-bottom: 3rem;
+}
+
+@media (min-width: 768px) {
+    .section-spacing {
+        margin-bottom: 4rem;
+    }
+}
+
+/* Heading Spacing */
+h1,
+.display-1,
+.display-2,
+.display-3,
+.display-4,
+.display-5 {
+    margin-bottom: 1.5rem;
+}
+
+h2 {
+    margin-bottom: 1.25rem;
+}
+
+h3,
+h4 {
+    margin-bottom: 1rem;
+}
+
+h5,
+h6 {
+    margin-bottom: 0.75rem;
+}
+
+/* Paragraph Spacing */
+p {
+    margin-bottom: 1rem;
+    line-height: 1.7;
+}
+
+p.lead {
+    margin-bottom: 1.5rem;
+    line-height: 1.8;
+}
+
+/* Button Spacing */
+.btn {
+    padding: 0.75rem 1.5rem;
+    margin: 0.5rem 0.25rem;
+}
+
+.btn-lg {
+    padding: 1rem 2rem;
+}
+
+.btn-sm {
+    padding: 0.5rem 1rem;
+}
+
+/* Form Spacing */
+.form-group {
+    margin-bottom: 1.5rem;
+}
+
+.form-label {
+    margin-bottom: 0.5rem;
+    display: block;
+}
+
+.form-control,
+.form-select {
+    margin-bottom: 0.5rem;
+}
+
+/* Card Spacing */
+.card {
+    margin-bottom: 1.5rem;
+}
+
+.card-body {
+    padding: 1.5rem;
+}
+
+@media (min-width: 768px) {
+    .card-body {
+        padding: 2rem;
+    }
+}
+
+/* Grid Spacing */
+.row {
+    margin-left: -0.75rem;
+    margin-right: -0.75rem;
+}
+
+.row>* {
+    padding-left: 0.75rem;
+    padding-right: 0.75rem;
+}
+
+@media (min-width: 768px) {
+    .row {
+        margin-left: -1rem;
+        margin-right: -1rem;
+    }
+
+    .row>* {
+        padding-left: 1rem;
+        padding-right: 1rem;
+    }
+}
+
+/* Container Max Widths */
+.container-narrow {
+    max-width: 600px;
+    margin-left: auto;
+    margin-right: auto;
+}
+
+.container-medium {
+    max-width: 800px;
+    margin-left: auto;
+    margin-right: auto;
+}
+
+.container-wide {
+    max-width: 1200px;
+    margin-left: auto;
+    margin-right: auto;
+}
+
+/* Microsite Navigation Spacing */
+.microsite-nav {
+    padding: 1rem;
+}
+
+@media (min-width: 768px) {
+    .microsite-nav {
+        padding: 1.5rem 2rem;
+    }
+}
+
+/* Alert Spacing */
+.alert {
+    padding: 1rem 1.25rem;
+    margin-bottom: 1.5rem;
+}
+
+/* Badge Spacing */
+.badge {
+    padding: 0.5rem 1rem;
+    margin: 0.25rem;
+}
+
+/* List Spacing */
+ul,
+ol {
+    margin-bottom: 1.5rem;
+    padding-left: 2rem;
+}
+
+li {
+    margin-bottom: 0.5rem;
+}
+
+/* Image Spacing */
+img {
+    margin-bottom: 1rem;
+}
+
+/* Divider Spacing */
+hr {
+    margin: 2rem 0;
+}
+
+@media (min-width: 768px) {
+    hr {
+        margin: 3rem 0;
+    }
+}
+
+/* Navigation Bottom Padding (for bottom nav) */
+.has-bottom-nav {
+    padding-bottom: 100px !important;
+}
+
+/* Icon Spacing */
+.icon-with-text {
+    display: inline-flex;
+    align-items: center;
+    gap: 0.5rem;
+}
+
+/* Utility Classes */
+.p-responsive {
+    padding: 1rem;
+}
+
+@media (min-width: 768px) {
+    .p-responsive {
+        padding: 2rem;
+    }
+}
+
+@media (min-width: 1200px) {
+    .p-responsive {
+        padding: 3rem;
+    }
+}
+
+.m-responsive {
+    margin: 1rem;
+}
+
+@media (min-width: 768px) {
+    .m-responsive {
+        margin: 2rem;
+    }
+}
+
+@media (min-width: 1200px) {
+    .m-responsive {
+        margin: 3rem;
+    }
+}
+
+/* Gap Utilities */
+.gap-sm {
+    gap: 0.5rem;
+}
+
+.gap-md {
+    gap: 1rem;
+}
+
+.gap-lg {
+    gap: 1.5rem;
+}
+
+.gap-xl {
+    gap: 2rem;
+}
+
+/* Specific Page Overrides */
+/* Hero Page */
+.hero-content {
+    padding: 3rem 1.5rem;
+    text-align: center;
+}
+
+@media (min-width: 768px) {
+    .hero-content {
+        padding: 4rem 2rem;
+    }
+}
+
+/* Letter Page */
+.letter-container {
+    padding: 2rem 1.5rem;
+}
+
+@media (min-width: 768px) {
+    .letter-container {
+        padding: 3rem 2rem;
+    }
+}
+
+/* Gallery Grid */
+.gallery-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(200px, 1fr));
+    gap: 1rem;
+}
+
+@media (min-width: 768px) {
+    .gallery-grid {
+        gap: 1.5rem;
+    }
+}
+
+@media (min-width: 1200px) {
+    .gallery-grid {
+        gap: 2rem;
+    }
+}
+
+/* Timeline Spacing */
+.timeline-item {
+    margin-bottom: 2rem;
+    padding-left: 3rem;
+    position: relative;
+}
+
+@media (min-width: 768px) {
+    .timeline-item {
+        margin-bottom: 3rem;
+        padding-left: 4rem;
+    }
+}
+
+/* Consistent Text Spacing */
+.text-content p:last-child {
+    margin-bottom: 0;
+}
+
+.text-content>*:first-child {
+    margin-top: 0;
+}
+
+/* Mobile Optimizations */
+@media (max-width: 576px) {
+    .container {
+        padding-left: 1rem;
+        padding-right: 1rem;
+    }
+
+    .glass-card {
+        padding: 1.5rem 1rem;
+    }
+
+    .btn {
+        width: 100%;
+        margin: 0.5rem 0;
+    }
+
+    .btn-group .btn {
+        width: auto;
+    }
+}
+
+/* Consistent Focus States */
+button:focus,
+a:focus,
+input:focus,
+select:focus,
+textarea:focus {
+    outline: 2px solid #e91e63;
+    outline-offset: 2px;
+}
+
+/* Smooth Transitions */
+* {
+    transition: margin 0.2s ease, padding 0.2s ease;
+}
+
+button,
+a,
+.btn {
+    transition: all 0.3s ease;
+}

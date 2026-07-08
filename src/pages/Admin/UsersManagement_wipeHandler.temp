@@ -1,0 +1,28 @@
+
+    const handleBulkDelete = async () => {
+        if (selectedUsers.length === 0) return;
+        
+        try {
+            await Promise.all(selectedUsers.map(id => deleteUserAdmin(id)));
+            toast.success(`${selectedUsers.length} users deleted`);
+            setSelectedUsers([]);
+            loadUsers();
+        } catch (error) {
+            toast.error('Failed to delete users');
+        }
+    };
+
+    const handleWipeUserData = async (userId) => {
+        try {
+            // Get user's events and delete them
+            const userEvents = events.filter(e => e.userId === userId);
+            if (userEvents.length > 0) {
+                await Promise.all(userEvents.map(e => deleteEventAdmin(e.id)));
+            }
+            toast.success('User data wiped successfully');
+            loadUsers();
+        } catch (error) {
+            toast.error('Failed to wipe user data');
+            throw error;
+        }
+    };
