@@ -88,7 +88,7 @@ function EventView() {
                     </h1>
                     <p className="h4 mb-4" style={{ color: '#94a3b8' }}>{error || 'Event not found'}</p>
                     <a
-                        href="/"
+                        href="/create"
                         className="btn btn-lg px-5 py-3"
                         style={{
                             background: 'linear-gradient(135deg, #e91e63, #9c27b0, #2196f3)',

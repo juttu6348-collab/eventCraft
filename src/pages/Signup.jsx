@@ -1,6 +1,6 @@
 import { useState } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
-import { Mail, Lock, User, Chrome, Check, X } from 'lucide-react';
+import { Mail, Lock, User, Chrome, Check, X, Eye, EyeOff } from 'lucide-react';
 import { signUpWithEmail, signInWithGoogle } from '../services/authService';
 import { useAuth } from '../context/AuthContext';
 import toast from 'react-hot-toast';
@@ -17,6 +17,8 @@ function Signup() {
     });
     const [loading, setLoading] = useState(false);
     const [passwordFocus, setPasswordFocus] = useState(false);
+    const [showPassword, setShowPassword] = useState(false);
+    const [showConfirmPassword, setShowConfirmPassword] = useState(false);
 
     const handleChange = (e) => {
         const { name, value, type, checked } = e.target;
@@ -69,7 +71,7 @@ function Signup() {
             } else if (error.message && error.message.includes('Invalid email')) {
                 toast.error('Invalid email address');
             } else {
-                toast.error('Signup failed. Please try again.');
+                toast.error('This email is already registered. Please sign in instead.');
             }
         } finally {
             setLoading(false);
@@ -109,7 +111,7 @@ function Signup() {
                             <div className="mb-4">
                                 <button
                                     onClick={handleGoogleSignUp}
-                                    className="btn btn-outline-light w-100 d-flex align-items-center justify-content-center gap-2 py-3 hover-lift"
+                                    className="btn btn-google-filled w-100 d-flex align-items-center justify-content-center gap-2 py-3 hover-lift"
                                 >
                                     <Chrome size={20} />
                                     Sign up with Google
@@ -160,37 +162,53 @@ function Signup() {
 
                                 <div className="mb-3">
                                     <label htmlFor="password" className="form-label">Password</label>
-                                    <div className="input-with-icon">
-                                        <Lock size={18} className="input-icon" />
-                                        <input
-                                            type="password"
-                                            id="password"
-                                            name="password"
-                                            className="form-control form-control-dark ps-5"
-                                            placeholder="••••••••"
-                                            value={formData.password}
-                                            onChange={handleChange}
-                                            onFocus={() => setPasswordFocus(true)}
-                                            required
-                                        />
+                                    <div className="password-field-wrapper">
+  <input
+    type={showPassword ? 'text' : 'password'}
+    name="password"
+    value={formData.password}
+    onChange={handleChange}
+    onFocus={() => setPasswordFocus(true)}
+    className="form-control password-input-with-eye"
+    placeholder="Create a password"
+    required
+  />
+
+  <button
+    type="button"
+    className="password-eye-btn"
+    onClick={() => setShowPassword(prev => !prev)}
+    aria-label={showPassword ? 'Hide password' : 'Show password'}
+  >
+    {showPassword ? <EyeOff size={18} /> : <Eye size={18} />}
+  </button>
+</div>
                                     </div>
 
                                     {/* Password Strength Indicator */}
                                     {passwordFocus && formData.password && (
-                                        <div className="password-requirements mt-2 small">
-                                            <div className={passwordStrength.minLength ? 'text-success' : 'text-muted-light'}>
-                                                {passwordStrength.minLength ? <Check size={14} /> : <X size={14} />} At least 8 characters
+                                <div className="password-strength">
+                                    <div className={passwordStrength.minLength ? 'valid' : 'invalid'}>
+                                            {passwordStrength.minLength ? <Check size={14} /> : <X size={14} />}
+                                            At least 8 characters
                                             </div>
-                                            <div className={passwordStrength.hasUppercase ? 'text-success' : 'text-muted-light'}>
-                                                {passwordStrength.hasUppercase ? <Check size={14} /> : <X size={14} />} One uppercase letter
+
+                                            <div className={passwordStrength.hasUppercase ? 'valid' : 'invalid'}>
+                                            {passwordStrength.hasUppercase ? <Check size={14} /> : <X size={14} />}
+                                            One uppercase letter
                                             </div>
-                                            <div className={passwordStrength.hasNumber ? 'text-success' : 'text-muted-light'}>
-                                                {passwordStrength.hasNumber ? <Check size={14} /> : <X size={14} />} One number
+
+                                            <div className={passwordStrength.hasNumber ? 'valid' : 'invalid'}>
+                                            {passwordStrength.hasNumber ? <Check size={14} /> : <X size={14} />}
+                                            One number
+                                            </div>
+
+                                            <div className={passwordStrength.hasSpecial ? 'valid' : 'invalid'}>
+                                            {passwordStrength.hasSpecial ? <Check size={14} /> : <X size={14} />}
+                                            One special character (! @ # $ % ^ & *)
                                             </div>
                                         </div>
-                                    )}
-                                </div>
-
+                                        )}
                                 <div className="mb-3">
                                     <label htmlFor="confirmPassword" className="form-label">Confirm Password</label>
                                     <div className="input-with-icon">

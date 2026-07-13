@@ -53,37 +53,58 @@ function CreateEventForm() {
     const hasCheckedDraft = useRef(false);
 
     // Load draft on component mount
-    useEffect(() => {
-        if (hasCheckedDraft.current) return;
-        hasCheckedDraft.current = true;
+useEffect(() => {
+  const checkDraft = async () => {
+    try {
+      if (!hasDraft()) {
+        return;
+      }
 
-        const checkDraft = async () => {
-            if (hasDraft()) {
-                const draft = loadDraft();
-                if (draft) {
-                    const age = getDraftAge();
-                    const ageText = formatDraftAge(age);
+      const draft = loadDraft();
 
-                    const shouldLoad = await confirm({
-                        title: 'Resume Editing?',
-                        message: `You have an unsaved draft from ${ageText}. Would you like to continue where you left off?`,
-                        confirmText: 'Yes, Resume',
-                        cancelText: 'No, Start Over',
-                        variant: 'primary'
-                    });
+      const hasMeaningfulDraft =
+        draft &&
+        (
+          draft.senderName?.trim() ||
+          draft.receiverName?.trim() ||
+          draft.mainMessage?.trim()
+        );
 
-                    if (shouldLoad) {
-                        setFormData(draft);
-                    } else {
-                        clearDraft();
-                    }
-                }
-            }
-        };
+      if (!hasMeaningfulDraft) {
+        clearDraft();
+        return;
+      }
 
-        checkDraft();
-        // eslint-disable-next-line react-hooks/exhaustive-deps
-    }, []);
+      const age = getDraftAge();
+      const ageText = formatDraftAge(age);
+
+      const shouldLoad = await confirm({
+        title: 'Resume Editing?',
+        message: `You have an unsaved draft from ${ageText}. Would you like to continue where you left off?`,
+        confirmText: 'Yes, Resume',
+        cancelText: 'No, Start Over',
+        variant: 'primary',
+      });
+
+      if (shouldLoad) {
+        setFormData((currentFormData) => ({
+          ...currentFormData,
+          ...draft,
+
+          // Browser File objects cannot safely be restored from localStorage.
+          photos: [],
+        }));
+      } else {
+        clearDraft();
+      }
+    } catch (error) {
+      console.error('Failed to restore event draft:', error);
+      clearDraft();
+    }
+  };
+
+  checkDraft();
+}, []);
 
     // Auto-save draft every 30 seconds
     useEffect(() => {
@@ -353,61 +374,92 @@ function CreateEventForm() {
                                     <div className="col-md-6">
                                         <label className="form-label">Your Name (Sender) *</label>
                                         <input
-                                            type="text"
-                                            className="form-control form-control-dark"
-                                            value={formData.senderName}
-                                            onChange={(e) => setFormData({ ...formData, senderName: e.target.value })}
-                                            placeholder="Enter your name"
-                                            required
-                                        />
+  type="text"
+  name="senderName"
+  className="form-control form-control-dark"
+  placeholder="Enter your name"
+  value={formData.senderName}
+  onChange={(event) =>
+    setFormData((currentFormData) => ({
+      ...currentFormData,
+      senderName: event.target.value,
+    }))
+  }
+/>
                                     </div>
 
                                     <div className="col-md-6">
                                         <label className="form-label">Recipient Name *</label>
-                                        <input
-                                            type="text"
-                                            className="form-control form-control-dark"
-                                            value={formData.receiverName}
-                                            onChange={(e) => setFormData({ ...formData, receiverName: e.target.value })}
-                                            placeholder="Who is this for?"
-                                            required
-                                        />
+                                       <input
+  type="text"
+  name="receiverName"
+  className="form-control form-control-dark"
+  placeholder="Who is this for?"
+  value={formData.receiverName}
+  onChange={(event) =>
+    setFormData((currentFormData) => ({
+      ...currentFormData,
+      receiverName: event.target.value,
+    }))
+  }
+/>
                                     </div>
 
                                     <div className="col-md-6">
                                         <label className="form-label">Your Relationship</label>
                                         <select
-                                            className="form-select form-control-dark"
-                                            value={formData.relationship}
-                                            onChange={(e) => setFormData({ ...formData, relationship: e.target.value })}
-                                        >
-                                            <option value="">Select relationship...</option>
-                                            {relationships.map(rel => (
-                                                <option key={rel} value={rel}>{rel}</option>
-                                            ))}
-                                        </select>
+  name="relationship"
+  className="form-select form-control-dark"
+  value={formData.relationship}
+  onChange={(event) =>
+    setFormData((currentFormData) => ({
+      ...currentFormData,
+      relationship: event.target.value,
+    }))
+  }
+>
+  <option value="">Select relationship...</option>
+  <option value="Mother">Mother</option>
+  <option value="Father">Father</option>
+  <option value="Wife">Wife</option>
+  <option value="Husband">Husband</option>
+  <option value="Friend">Friend</option>
+  <option value="Other">Other</option>
+</select>
                                         <small className="text-muted-light">This helps personalize the message</small>
                                     </div>
 
                                     <div className="col-md-6">
                                         <label className="form-label">Event Date (Optional)</label>
-                                        <input
-                                            type="date"
-                                            className="form-control form-control-dark"
-                                            value={formData.date}
-                                            onChange={(e) => setFormData({ ...formData, date: e.target.value })}
-                                        />
+                                       <input
+  type="date"
+  name="date"
+  className="form-control form-control-dark"
+  value={formData.date}
+  onChange={(event) =>
+    setFormData((currentFormData) => ({
+      ...currentFormData,
+      date: event.target.value,
+    }))
+  }
+/>
                                     </div>
 
                                     <div className="col-12">
                                         <label className="form-label">Main Message (Optional)</label>
                                         <textarea
-                                            className="form-control form-control-dark"
-                                            rows={6}
-                                            value={formData.mainMessage}
-                                            onChange={(e) => setFormData({ ...formData, mainMessage: e.target.value })}
-                                            placeholder="Write your heartfelt message here... (Leave blank and AI will write a beautiful message for you!)"
-                                        />
+  name="mainMessage"
+  className="form-control form-control-dark"
+  rows="5"
+  placeholder="Write your heartfelt message here..."
+  value={formData.mainMessage}
+  onChange={(event) =>
+    setFormData((currentFormData) => ({
+      ...currentFormData,
+      mainMessage: event.target.value,
+    }))
+  }
+/>
                                         <small className="text-info">
                                             ✨ <strong>Pro tip:</strong> Leave this blank and our AI will generate a perfect, emotional message tailored to your relationship!
                                         </small>

@@ -92,7 +92,7 @@ function Home() {
                     {/* See All Events Button */}
                     <div className="row justify-content-center mb-5">
                         <div className="col-auto">
-                            <Link to="/events" className="btn btn-outline-light px-4 py-2">
+                            <Link to="/events" className="btn btn-see-events-green px-4 py-3">
                                 See All Events ({eventTypes.length}) →
                             </Link>
                         </div>

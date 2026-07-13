@@ -3,7 +3,7 @@ import {
     LineChart, Line, BarChart, Bar, AreaChart, Area, PieChart, Pie, Cell,
     XAxis, YAxis, CartesianGrid, Tooltip, Legend, ResponsiveContainer
 } from 'recharts';
-import { format, subDays, isWithinInterval } from 'date-fns';
+import { format, subDays } from 'date-fns';
 import { Calendar, Download, TrendingUp, Users, Eye } from 'lucide-react';
 import { getAllUsers, getAllEvents } from '../../services/adminService';
 import toast from 'react-hot-toast';
@@ -13,6 +13,17 @@ function Analytics() {
     const [events, setEvents] = useState([]);
     const [loading, setLoading] = useState(true);
     const [dateRange, setDateRange] = useState(30); // Last 30 days
+    const parseDate = (value) => {
+  if (!value) return null;
+
+  if (typeof value.toDate === 'function') {
+    return value.toDate();
+  }
+
+  const parsedDate = new Date(value);
+
+  return Number.isNaN(parsedDate.getTime()) ? null : parsedDate;
+};
 
     useEffect(() => {
         loadData();
@@ -25,71 +36,105 @@ function Analytics() {
                 getAllUsers(),
                 getAllEvents()
             ]);
-            setUsers(usersData);
-            setEvents(eventsData);
+           setUsers(Array.isArray(usersData) ? usersData : []);
+setEvents(Array.isArray(eventsData) ? eventsData : []);
+            
         } catch (error) {
-            toast.error('Failed to load analytics data');
-        } finally {
-            setLoading(false);
-        }
-    };
+  console.error('Analytics loading error:', error);
+  toast.error(
+    error.response?.data?.error ||
+    error.message ||
+    'Failed to load analytics data'
+  );
+}}
+
 
     // Process user growth data
-    const getUserGrowthData = () => {
-        const days = [];
-        for (let i = dateRange - 1; i >= 0; i--) {
-            const date = subDays(new Date(), i);
-            const dateStr = format(date, 'MMM dd');
+   const getUserGrowthData = () => {
+  const days = [];
 
-            const userCount = users.filter(user => {
-                if (!user.createdAt) return false;
-                const userDate = user.createdAt.toDate();
-                return format(userDate, 'MMM dd yyyy') === format(date, 'MMM dd yyyy');
-            }).length;
+  for (let i = dateRange - 1; i >= 0; i--) {
+    const date = subDays(new Date(), i);
+    const dateStr = format(date, 'MMM dd');
 
-            days.push({ date: dateStr, users: userCount });
-        }
-        return days;
-    };
+    const userCount = users.filter((user) => {
+      const userDate = parseDate(user.createdAt);
 
-    // Process event creation trends
-    const getEventTrendsData = () => {
-        const days = [];
-        for (let i = dateRange - 1; i >= 0; i--) {
-            const date = subDays(new Date(), i);
-            const dateStr = format(date, 'MMM dd');
+      if (!userDate) return false;
 
-            const eventCount = events.filter(event => {
-                if (!event.createdAt) return false;
-                const eventDate = event.createdAt.toDate();
-                return format(eventDate, 'MMM dd yyyy') === format(date, 'MMM dd yyyy');
-            }).length;
+      return (
+        format(userDate, 'MMM dd yyyy') ===
+        format(date, 'MMM dd yyyy')
+      );
+    }).length;
 
-            days.push({ date: dateStr, events: eventCount });
-        }
-        return days;
-    };
+    days.push({
+      date: dateStr,
+      users: userCount
+    });
+  }
 
-    // Process views data
-    const getViewsData = () => {
-        const days = [];
-        for (let i = dateRange - 1; i >= 0; i--) {
-            const date = subDays(new Date(), i);
-            const dateStr = format(date, 'MMM dd');
+  return days;
+};
 
-            // Sum all views for events created on this day
-            const totalViews = events
-                .filter(event => {
-                    if (!event.createdAt) return false;
-                    const eventDate = event.createdAt.toDate();
-                    return format(eventDate, 'MMM dd yyyy') === format(date, 'MMM dd yyyy');
-                })
-                .reduce((sum, event) => sum + (event.views || 0), 0);
+const getEventTrendsData = () => {
+  const days = [];
 
-            days.push({ date: dateStr, views: totalViews });
-        }
-        return days;
-    };
+  for (let i = dateRange - 1; i >= 0; i--) {
+    const date = subDays(new Date(), i);
+    const dateStr = format(date, 'MMM dd');
+
+    const eventCount = events.filter((event) => {
+      const eventDate = parseDate(event.createdAt);
+
+      if (!eventDate) return false;
+
+      return (
+        format(eventDate, 'MMM dd yyyy') ===
+        format(date, 'MMM dd yyyy')
+      );
+    }).length;
+
+    days.push({
+      date: dateStr,
+      events: eventCount
+    });
+  }
+
+  return days;
+};
+
+const getViewsData = () => {
+  const days = [];
+
+  for (let i = dateRange - 1; i >= 0; i--) {
+    const date = subDays(new Date(), i);
+    const dateStr = format(date, 'MMM dd');
+
+    const totalViews = events
+      .filter((event) => {
+        const eventDate = parseDate(event.createdAt);
+
+        if (!eventDate) return false;
+
+        return (
+          format(eventDate, 'MMM dd yyyy') ===
+          format(date, 'MMM dd yyyy')
+        );
+      })
+      .reduce(
+        (sum, event) => sum + Number(event.views || 0),
+        0
+      );
+
+    days.push({
+      date: dateStr,
+      views: totalViews
+    });
+  }
+
+  return days;
+};
 
     // Get events by type distribution
     const getEventsByType = () => {
@@ -363,7 +408,9 @@ function Analytics() {
                                     <td className="fw-semibold">{event.receiverName}</td>
                                     <td><span className="badge bg-info">{event.eventType}</span></td>
                                     <td>{event.senderName || 'N/A'}</td>
-                                    <td>{event.createdAt?.toDate?.().toLocaleDateString() || 'N/A'}</td>
+                                    <td>
+  {parseDate(event.createdAt)?.toLocaleDateString() || 'N/A'}
+</td>
                                     <td className="fw-bold text-warning">{event.views || 0}</td>
                                 </tr>
                             ))}
@@ -381,4 +428,3 @@ function Analytics() {
 }
 
 export default Analytics;
-

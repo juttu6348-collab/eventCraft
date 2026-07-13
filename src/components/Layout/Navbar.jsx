@@ -127,7 +127,8 @@ function Navbar() {
                                     Create Event
                                 </Link>
                                 <div className="position-relative">
-                                    <button className="btn btn-outline-light d-flex align-items-center gap-2" onClick={() => setShowUserMenu(!showUserMenu)}>
+                                    <button className="btn btn-account-maroon px-4"
+                                    onClick={() => setShowUserMenu(!showUserMenu)}>
                                         <User size={18} />
                                         <span className="d-none d-lg-inline">{user.displayName || 'User'}</span>
                                     </button>
@@ -155,7 +156,7 @@ function Navbar() {
                             </>
                         ) : (
                             <>
-                                <Link to="/login" className="btn btn-outline-light px-4" onClick={() => setMobileMenuOpen(false)}>
+                                <Link to="/login" className="btn btn-signin-green px-4 hover-glow" onClick={() => setMobileMenuOpen(false)}>
                                     Sign In
                                 </Link>
                                 <Link to="/signup" className="btn btn-gradient px-4 hover-glow" onClick={() => setMobileMenuOpen(false)}>

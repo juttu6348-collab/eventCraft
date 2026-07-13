@@ -18,6 +18,9 @@ import Analytics from './pages/admin/Analytics';
 import Settings from './pages/admin/Settings';
 import ActivityLogs from './pages/admin/ActivityLogs';
 import ProtectedRoute from './components/Auth/ProtectedRoute';
+import PrivacyPolicy from './pages/PrivacyPolicy';
+import TermsOfService from './pages/TermsOfService';
+import Contact from './pages/Contact';
 import './inline-styles.css';
 import './admin-styles.css';
 import './microsite.css';
@@ -45,6 +48,9 @@ function App() {
               <Route path="/how-it-works" element={<HowItWorks />} />
               <Route path="/themes" element={<Themes />} />
               <Route path="/events" element={<Events />} />
+              <Route path="/privacy" element={<PrivacyPolicy />} />
+              <Route path="/terms" element={<TermsOfService />} />
+              <Route path="/contact" element={<Contact />} />
               <Route path="/dashboard" element={
                 <ProtectedRoute>
                   <Dashboard />

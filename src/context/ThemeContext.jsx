@@ -35,8 +35,10 @@ export function ThemeProvider({ children }) {
 
     // Initialize theme: stored > system > default (dark)
     const [theme, setThemeState] = useState(() => {
-        return getStoredTheme() || getSystemTheme();
+        return getStoredTheme() || 'dark';
     });
+        
+    
 
     // Apply theme to document root
     const applyTheme = (newTheme) => {

@@ -94,7 +94,7 @@ function EventCard({ event, onDelete, onDuplicate, onToggleFavorite }) {
             </div>
 
             {/* Event Details */}
-            <Link to={`/e/${event.id}`} className="event-card-content">
+            <Link to={`/e/${event.slug}`} className="event-card-content">
                 <h3 className="event-card-title">{event.receiverName}</h3>
                 {event.senderName && (
                     <p className="event-card-sender">From: {event.senderName}</p>
@@ -120,11 +120,11 @@ function EventCard({ event, onDelete, onDuplicate, onToggleFavorite }) {
 
             {/* Action Buttons */}
             <div className="event-card-footer">
-                <Link to={`/e/${event.id}`} className="btn btn-sm btn-outline-info">
+                <Link to={`/e/${event.slug}`} className="btn btn-sm btn-outline-info">
                     <Eye size={14} className="me-1" />
                     View
                 </Link>
-                <Link to={`/share/${event.id}`} className="btn btn-sm btn-outline-success">
+                <Link to={`/share/${event.slug}`} className="btn btn-sm btn-outline-success">
                     <Share2 size={14} className="me-1" />
                     Share
                 </Link>
@@ -134,19 +134,32 @@ function EventCard({ event, onDelete, onDuplicate, onToggleFavorite }) {
 }
 
 EventCard.propTypes = {
-    event: PropTypes.shape({
-        id: PropTypes.string.isRequired,
-        receiverName: PropTypes.string.isRequired,
-        senderName: PropTypes.string,
-        eventType: PropTypes.string.isRequired,
-        views: PropTypes.number,
-        createdAt: PropTypes.object,
-        updatedAt: PropTypes.object,
-        isFavorite: PropTypes.bool
-    }).isRequired,
-    onDelete: PropTypes.func,
-    onDuplicate: PropTypes.func,
-    onToggleFavorite: PropTypes.func
+  event: PropTypes.shape({
+    id: PropTypes.oneOfType([
+      PropTypes.string,
+      PropTypes.number
+    ]).isRequired,
+
+    slug: PropTypes.string.isRequired,
+
+    receiverName: PropTypes.string.isRequired,
+    senderName: PropTypes.string,
+    eventType: PropTypes.string.isRequired,
+    views: PropTypes.number,
+    createdAt: PropTypes.oneOfType([
+      PropTypes.string,
+      PropTypes.object
+    ]),
+    updatedAt: PropTypes.oneOfType([
+      PropTypes.string,
+      PropTypes.object
+    ]),
+    isFavorite: PropTypes.bool
+  }).isRequired,
+
+  onDelete: PropTypes.func,
+  onDuplicate: PropTypes.func,
+  onToggleFavorite: PropTypes.func
 };
 
 export default EventCard;

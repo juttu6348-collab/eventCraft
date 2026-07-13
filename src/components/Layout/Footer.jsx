@@ -123,7 +123,8 @@ function Footer() {
                         <small className="text-muted-light">
                             <Link to="/privacy" className="hover-link me-3">Privacy Policy</Link>
                             <Link to="/terms" className="hover-link me-3">Terms of Service</Link>
-                            <Link to="/about" className="hover-link">Contact</Link>
+                            <Link to="/contact" className="hover-link">Contact</Link>
+                            
                         </small>
                     </div>
                 </div>

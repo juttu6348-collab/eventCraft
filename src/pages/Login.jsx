@@ -1,7 +1,6 @@
 import { useState } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
-import { Mail, Lock, Chrome, UserCircle2 } from 'lucide-react';
-import { signInWithEmail, signInWithGoogle, signInAsGuest } from '../services/authService';
+import { Mail, Lock, Chrome, UserCircle2, Eye, EyeOff } from 'lucide-react';import { signInWithEmail, signInWithGoogle, signInAsGuest } from '../services/authService';
 import { useAuth } from '../context/AuthContext';
 import toast from 'react-hot-toast';
 
@@ -15,6 +14,7 @@ function Login() {
     });
     const [loading, setLoading] = useState(false);
     const [guestLoading, setGuestLoading] = useState(false);
+    const [showPassword, setShowPassword] = useState(false);
 
     const handleChange = (e) => {
         const { name, value, type, checked } = e.target;
@@ -95,7 +95,7 @@ function Login() {
                             <div className="mb-4">
                                 <button
                                     onClick={handleGoogleSignIn}
-                                    className="btn btn-outline-light w-100 d-flex align-items-center justify-content-center gap-2 py-3 hover-lift mb-3"
+                                    className="btn btn-google-filled w-100 d-flex align-items-center justify-content-center gap-2 py-3 hover-lift mb-3"
                                 >
                                     <Chrome size={20} />
                                     Continue with Google
@@ -103,7 +103,7 @@ function Login() {
                                 <button
                                     onClick={handleGuestSignIn}
                                     disabled={guestLoading}
-                                    className="btn btn-outline-light w-100 d-flex align-items-center justify-content-center gap-2 py-3 hover-lift"
+                                    className="btn btn-guest-filled w-100 d-flex align-items-center justify-content-center gap-2 py-3 hover-lift"
                                 >
                                     <UserCircle2 size={20} />
                                     {guestLoading ? 'Signing in...' : 'Continue as Guest'}
@@ -136,19 +136,28 @@ function Login() {
 
                                 <div className="mb-3">
                                     <label htmlFor="password" className="form-label">Password</label>
-                                    <div className="input-with-icon">
-                                        <Lock size={18} className="input-icon" />
-                                        <input
-                                            type="password"
-                                            id="password"
-                                            name="password"
-                                            className="form-control form-control-dark ps-5"
-                                            placeholder="••••••••"
-                                            value={formData.password}
-                                            onChange={handleChange}
-                                            required
-                                        />
-                                    </div>
+                                    <div className="password-field-wrapper">
+  <Lock size={18} className="input-icon" />
+
+  <input
+    type={showPassword ? 'text' : 'password'}
+    name="password"
+    value={formData.password}
+    onChange={handleChange}
+    className="form-control password-input-with-eye"
+    placeholder="Enter your password"
+    required
+  />
+
+  <button
+    type="button"
+    className="password-eye-btn"
+    onClick={() => setShowPassword(prev => !prev)}
+    aria-label={showPassword ? 'Hide password' : 'Show password'}
+  >
+    {showPassword ? <EyeOff size={18} /> : <Eye size={18} />}
+  </button>
+</div>
                                 </div>
 
                                 <div className="d-flex justify-content-between align-items-center mb-4">

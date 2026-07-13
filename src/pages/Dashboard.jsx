@@ -89,7 +89,7 @@ function Dashboard() {
 
     if (loading) {
         return (
-            <div className="d-flex flex-column min-vh-100">
+            <div className="dashboard-page min-vh-100">
                 <Navbar />
                 <LoadingDashboard />
                 <Footer />
@@ -108,72 +108,88 @@ function Dashboard() {
     }
 
     return (
-        <div className="d-flex flex-column min-vh-100">
-            <Navbar />
+    <div className="dashboard-page d-flex flex-column min-vh-100">
+        <Navbar />
 
-            <div className="flex-grow-1 py-5 dashboard-main-wrapper">
-                <div className="container">
-                    {/* Header */}
-                    <div className="d-flex flex-column flex-md-row justify-content-between align-items-start align-items-md-center mb-4 gap-3">
-                        <div>
-                            <h1 className="display-5 fw-bold mb-2">
-                                <span className="gradient-text-animated">My Events</span>
-                            </h1>
-                            <p className="text-muted-light mb-0">
-                                Manage all your special microsites
-                            </p>
-                        </div>
-                        <Link
-                            to="/create"
-                            className="btn btn-gradient px-4 py-2 d-flex align-items-center gap-2 hover-glow"
-                        >
-                            <Plus size={20} />
-                            Create New Event
-                        </Link>
-                    </div>
+        <main className="flex-grow-1 dashboard-main-wrapper">
+            <div className="container dashboard-content">
 
-                    {/* Analytics Cards */}
-                    {analytics && <AnalyticsCards analytics={analytics} />}
+                {/* Header */}
+                <div className="dashboard-header">
+                    <div>
+                        <h1 className="display-5 fw-bold mb-2">
+                            <span className="gradient-text-animated">
+                                My Events
+                            </span>
+                        </h1>
 
-                    {/* Search, Filter, and View Controls */}
-                    <div className="glass-card p-3 mb-4">
-                        <div className="row g-3 align-items-center">
-                            <div className="col-12 col-md-5">
-                                <SearchBar value={searchQuery} onChange={setSearchQuery} />
-                            </div>
-                            <div className="col-12 col-md-5">
-                                <FilterBar
-                                    filterType={filterType}
-                                    sortBy={sortBy}
-                                    onFilterChange={setFilterType}
-                                    onSortChange={setSortBy}
-                                />
-                            </div>
-                            <div className="col-12 col-md-2">
-                                <ViewToggle viewMode={viewMode} onChange={setViewMode} />
-                            </div>
-                        </div>
-                    </div>
-
-                    {/* Results Count */}
-                    <div className="mb-3">
-                        <p className="text-muted-light small">
-                            Showing {filteredEvents.length} of {events.length} events
+                        <p className="text-muted-light mb-0">
+                            Manage all your special microsites
                         </p>
                     </div>
 
-                    {/* Events List */}
-                    <EventsList
-                        events={filteredEvents}
-                        viewMode={viewMode}
-                        onEventUpdated={loadEvents}
-                    />
+                    <Link
+                        to="/create"
+                        className="btn btn-gradient px-4 py-2 d-flex align-items-center justify-content-center gap-2 hover-glow"
+                    >
+                        <Plus size={20} />
+                        Create New Event
+                    </Link>
                 </div>
-            </div>
 
-            <Footer />
-        </div>
-    );
+                {/* Analytics Cards */}
+                {analytics && (
+                    <AnalyticsCards analytics={analytics} />
+                )}
+
+                {/* Search, Filter and View Controls */}
+                <div className="glass-card p-3 mb-4">
+                    <div className="row g-3 align-items-center">
+                        <div className="col-12 col-md-5">
+                            <SearchBar
+                                value={searchQuery}
+                                onChange={setSearchQuery}
+                            />
+                        </div>
+
+                        <div className="col-12 col-md-5">
+                            <FilterBar
+                                filterType={filterType}
+                                sortBy={sortBy}
+                                onFilterChange={setFilterType}
+                                onSortChange={setSortBy}
+                            />
+                        </div>
+
+                        <div className="col-12 col-md-2">
+                            <ViewToggle
+                                viewMode={viewMode}
+                                onChange={setViewMode}
+                            />
+                        </div>
+                    </div>
+                </div>
+
+                {/* Results Count */}
+                <div className="mb-3">
+                    <p className="text-muted-light small mb-0">
+                        Showing {filteredEvents.length} of {events.length} events
+                    </p>
+                </div>
+
+                {/* Events List */}
+                <EventsList
+                    events={filteredEvents}
+                    viewMode={viewMode}
+                    onEventUpdated={loadEvents}
+                />
+            </div>
+        </main>
+
+        <Footer />
+    </div>
+);
+    
 }
 
 export default Dashboard;

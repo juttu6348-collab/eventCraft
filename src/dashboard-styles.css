@@ -434,3 +434,51 @@
         flex-wrap: wrap;
     }
 }
+/* Main dashboard layout */
+.dashboard-page {
+    min-height: 100vh;
+    background: var(--bg-primary);
+}
+
+.dashboard-main-wrapper {
+    width: 100%;
+}
+
+.dashboard-content {
+    padding-top: 110px;
+    padding-bottom: 70px;
+}
+
+.dashboard-header {
+    display: flex;
+    align-items: flex-start;
+    justify-content: space-between;
+    gap: 24px;
+    margin-bottom: 32px;
+}
+
+.dashboard-header h1 {
+    margin-top: 0;
+    line-height: 1.15;
+}
+
+.dashboard-header .btn {
+    flex-shrink: 0;
+}
+
+@media (max-width: 767px) {
+    .dashboard-content {
+        padding-top: 95px;
+        padding-left: 18px;
+        padding-right: 18px;
+    }
+
+    .dashboard-header {
+        flex-direction: column;
+        align-items: stretch;
+    }
+
+    .dashboard-header .btn {
+        width: 100%;
+    }
+}
