@@ -1,6 +1,9 @@
 const express = require('express');
 const cors = require('cors');
 const path = require('path');
+const helmet = require('helmet');
+const rateLimit = require('express-rate-limit');
+
 require('dotenv').config();
 
 const { testConnection } = require('./config/database');
@@ -11,6 +14,7 @@ const adminRoutes = require('./routes/admin');
 
 const app = express();
 const PORT = process.env.PORT || 3000;
+app.use(helmet());
 
 // Middleware - CORS configuration for multiple frontend ports
 const allowedOrigins = [
@@ -37,12 +41,22 @@ app.use(express.urlencoded({ extended: true }));
 // Serve uploaded files
 app.use('/uploads', express.static(path.join(__dirname, 'uploads')));
 
+// Authentication rate limiter
+const authLimiter = rateLimit({
+    windowMs: 15 * 60 * 1000,
+    max: 50,
+    standardHeaders: true,
+    legacyHeaders: false,
+    message: {
+        error: 'Too many authentication requests. Please try again later.'
+    }
+});
+
 // Routes
-app.use('/api/auth', authRoutes);
+app.use('/api/auth', authLimiter, authRoutes);
 app.use('/api/events', eventsRoutes);
 app.use('/api/dashboard', dashboardRoutes);
 app.use('/api/admin', adminRoutes);
-
 // Health check
 app.get('/api/health', (req, res) => {
     res.json({ status: 'OK', message: 'EventCraft API is running' });

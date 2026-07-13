@@ -9,16 +9,26 @@ const DRAFT_KEY = 'eventcraft_draft';
  */
 export function saveDraft(formData) {
     try {
+        const {
+            photos,
+            ...serializableFormData
+        } = formData;
+
         const draft = {
-            ...formData,
+            ...serializableFormData,
+            photos: [],
             savedAt: new Date().toISOString(),
-            version: '1.0'
+            version: '1.1'
         };
-        localStorage.setItem(DRAFT_KEY, JSON.stringify(draft));
-        console.log('✅ Draft saved:', new Date().toLocaleTimeString());
+
+        localStorage.setItem(
+            DRAFT_KEY,
+            JSON.stringify(draft)
+        );
+
         return true;
     } catch (error) {
-        console.error('❌ Error saving draft:', error);
+        console.error('Error saving draft:', error);
         return false;
     }
 }

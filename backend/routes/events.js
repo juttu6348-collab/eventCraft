@@ -392,27 +392,55 @@ router.get('/:id/analytics', authMiddleware, async (req, res) => {
     try {
         const { id } = req.params;
 
-        // Get event with stats
         const [events] = await pool.query(
-            'SELECT e.*, s.views, s.shares FROM events e LEFT JOIN event_stats s ON e.slug = s.event_slug WHERE e.id = ?',
+            `SELECT
+                e.*,
+                COALESCE(s.views, 0) AS views,
+                COALESCE(s.shares, 0) AS shares
+             FROM events e
+             LEFT JOIN event_stats s
+                ON e.slug = s.event_slug
+             WHERE e.id = ?`,
             [id]
         );
 
         if (events.length === 0) {
-            return res.status(404).json({ error: 'Event not found' });
+            return res.status(404).json({
+                error: 'Event not found'
+            });
         }
 
         const event = events[0];
 
-        res.json({
-            totalViews: event.views || 0,
-            shares: event.shares || 0,
-            createdAt: event.created_at,
-            updatedAt: event.updated_at
+        const eventOwnerId = Number(event.user_id);
+        const loggedInUserId = Number(req.user.id);
+
+        if (
+            eventOwnerId !== loggedInUserId &&
+            req.user.role !== 'admin'
+        ) {
+            return res.status(403).json({
+                error: 'Not authorized to view this event analytics'
+            });
+        }
+
+        return res.status(200).json({
+            success: true,
+            analytics: {
+                eventId: event.id,
+                slug: event.slug,
+                views: Number(event.views || 0),
+                shares: Number(event.shares || 0),
+                createdAt: event.created_at,
+                updatedAt: event.updated_at
+            }
         });
     } catch (error) {
-        console.error('Get analytics error:', error);
-        res.status(500).json({ error: 'Failed to get analytics' });
+        console.error('Get event analytics error:', error);
+
+        return res.status(500).json({
+            error: 'Failed to retrieve event analytics'
+        });
     }
 });
 
