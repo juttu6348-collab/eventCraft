@@ -3,6 +3,28 @@ const router = express.Router();
 const { pool } = require('../config/database');
 const { authMiddleware, optionalAuthMiddleware } = require('../middleware/auth');
 const upload = require('../middleware/upload');
+const cloudinary = require('../config/cloudinary');
+
+function uploadImageBuffer(fileBuffer) {
+    return new Promise((resolve, reject) => {
+        const uploadStream = cloudinary.uploader.upload_stream(
+            {
+                folder: 'eventcraft/events',
+                resource_type: 'image'
+            },
+            (error, result) => {
+                if (error) {
+                    reject(error);
+                    return;
+                }
+
+                resolve(result);
+            }
+        );
+
+        uploadStream.end(fileBuffer);
+    });
+}
 
 // Helper function to generate slug
 function generateSlug(senderName, receiverName) {
@@ -64,16 +86,29 @@ router.post('/', authMiddleware, upload.array('photos', 10), async (req, res) =>
         const eventId = eventResult.insertId;
 
         // Insert photos if any
-        if (req.files && req.files.length > 0) {
-            const photoPromises = req.files.map((file, index) => {
-                const photoUrl = `/uploads/${file.filename}`;
-                return connection.query(
-                    'INSERT INTO event_photos (event_id, photo_url, upload_order) VALUES (?, ?, ?)',
-                    [eventId, photoUrl, index]
-                );
-            });
-            await Promise.all(photoPromises);
-        }
+if (req.files && req.files.length > 0) {
+    const uploadedImages = await Promise.all(
+        req.files.map((file) =>
+            uploadImageBuffer(file.buffer)
+        )
+    );
+
+    const photoPromises = uploadedImages.map(
+        (uploadedImage, index) =>
+            connection.query(
+                `INSERT INTO event_photos
+                    (event_id, photo_url, upload_order)
+                 VALUES (?, ?, ?)`,
+                [
+                    eventId,
+                    uploadedImage.secure_url,
+                    index
+                ]
+            )
+    );
+
+    await Promise.all(photoPromises);
+}
 
         // Insert custom page if provided
         if (customPageTitle || customPageBody) {

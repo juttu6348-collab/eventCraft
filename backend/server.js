@@ -17,29 +17,35 @@ const PORT = process.env.PORT || 3000;
 app.use(helmet());
 
 // Middleware - CORS configuration for multiple frontend ports
-const allowedOrigins = [
-    process.env.FRONTEND_URL || 'http://localhost:5173',
-    'http://localhost:5174' // Alternative Vite port
-];
+const allowedOrigins = (
+    process.env.FRONTEND_URLS ||
+    'http://localhost:5173'
+)
+    .split(',')
+    .map((origin) => origin.trim())
+    .filter(Boolean);
 
 app.use(cors({
-    origin: function (origin, callback) {
-        // Allow requests with no origin (like mobile apps or curl requests)
-        if (!origin) return callback(null, true);
-
-        if (allowedOrigins.indexOf(origin) !== -1) {
-            callback(null, true);
-        } else {
-            callback(new Error('Not allowed by CORS'));
+    origin(origin, callback) {
+        if (!origin) {
+            return callback(null, true);
         }
+
+        if (allowedOrigins.includes(origin)) {
+            return callback(null, true);
+        }
+
+        return callback(
+            new Error('Not allowed by CORS')
+        );
     },
+
     credentials: true
 }));
 app.use(express.json());
 app.use(express.urlencoded({ extended: true }));
 
-// Serve uploaded files
-app.use('/uploads', express.static(path.join(__dirname, 'uploads')));
+
 
 // Authentication rate limiter
 const authLimiter = rateLimit({
@@ -75,29 +81,37 @@ app.use((req, res) => {
     res.status(404).json({ error: 'Route not found' });
 });
 
-// Start server
-async function startServer() {
-    // Test database connection
+
+
+async function startLocalServer() {
     const dbConnected = await testConnection();
 
     if (!dbConnected) {
-        console.error('⚠️ Failed to connect to database. Please check your MySQL server and configuration.');
-        console.error('Make sure MySQL is running and the database "eventcraft" exists.');
-        console.error('You can create it by running the schema.sql file in the config folder.');
+        console.error(
+            'Failed to connect to the database'
+        );
+
         process.exit(1);
     }
 
-    app.listen(PORT, () => {
-        console.log(`\n🚀 EventCraft Backend Server`);
-        console.log(`📍 Server running on http://localhost:${PORT}`);
-        console.log(`🔗 API base URL: http://localhost:${PORT}/api`);
-        console.log(`💾 Database: ${process.env.DB_NAME}`);
-        console.log(`🌐 CORS enabled for: ${process.env.FRONTEND_URL}`);
-        console.log(`\n✨ Ready to accept requests!\n`);
+    const port = process.env.PORT || 3000;
+
+    app.listen(port, () => {
+        console.log(
+            `EventCraft API running on port ${port}`
+        );
     });
 }
 
-startServer().catch(error => {
-    console.error('Failed to start server:', error);
-    process.exit(1);
-});
+if (require.main === module) {
+    startLocalServer().catch((error) => {
+        console.error(
+            'Failed to start server:',
+            error
+        );
+
+        process.exit(1);
+    });
+}
+
+module.exports = app;

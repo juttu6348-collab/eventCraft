@@ -11,8 +11,15 @@ build/
 .env.*
 !.env.example
 
+backend/uploads/*
+!backend/uploads/.gitkeep
+
 *.log
+
 .vscode/
 .idea/
+
 .DS_Store
 Thumbs.db
+
+.vercel/

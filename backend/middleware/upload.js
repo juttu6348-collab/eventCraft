@@ -8,7 +8,6 @@ const allowedMimeTypes = new Set([
 ]);
 
 const upload = multer({
-    // Keep files temporarily in memory for Cloudinary upload
     storage: multer.memoryStorage(),
 
     limits: {
@@ -19,7 +18,9 @@ const upload = multer({
     fileFilter: (req, file, callback) => {
         if (!allowedMimeTypes.has(file.mimetype)) {
             return callback(
-                new Error('Only JPEG, PNG, WebP and GIF images are allowed')
+                new Error(
+                    'Only JPEG, PNG, WebP and GIF images are allowed'
+                )
             );
         }
 
