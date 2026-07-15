@@ -2,19 +2,14 @@ const fs = require('fs');
 const mysql = require('mysql2/promise');
 require('dotenv').config();
 
-const useSsl = process.env.DB_SSL
-    ? process.env.DB_SSL === 'true'
-    : process.env.NODE_ENV === 'production';
+const sslOptions = {
+    minVersion: 'TLSv1.2',
+    rejectUnauthorized: true
+};
 
-const sslOptions = useSsl
-    ? {
-        minVersion: 'TLSv1.2'
-    }
-    : undefined;
-
-if (useSsl && process.env.DB_SSL_CA_FILE) {
+if (process.env.DB_SSL_CA_FILE) {
     sslOptions.ca = fs.readFileSync(process.env.DB_SSL_CA_FILE, 'utf8');
-} else if (useSsl && process.env.DB_SSL_CA) {
+} else if (process.env.DB_SSL_CA) {
     const caValue = process.env.DB_SSL_CA.trim();
     sslOptions.ca = caValue.includes('-----BEGIN CERTIFICATE-----')
         ? caValue
