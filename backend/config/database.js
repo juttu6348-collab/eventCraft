@@ -1,7 +1,25 @@
+const fs = require('fs');
 const mysql = require('mysql2/promise');
 require('dotenv').config();
 
-const useSsl = process.env.DB_SSL === 'true';
+const useSsl = process.env.DB_SSL
+    ? process.env.DB_SSL === 'true'
+    : process.env.NODE_ENV === 'production';
+
+const sslOptions = useSsl
+    ? {
+        minVersion: 'TLSv1.2'
+    }
+    : undefined;
+
+if (useSsl && process.env.DB_SSL_CA_FILE) {
+    sslOptions.ca = fs.readFileSync(process.env.DB_SSL_CA_FILE, 'utf8');
+} else if (useSsl && process.env.DB_SSL_CA) {
+    const caValue = process.env.DB_SSL_CA.trim();
+    sslOptions.ca = caValue.includes('-----BEGIN CERTIFICATE-----')
+        ? caValue
+        : Buffer.from(caValue, 'base64').toString('utf8');
+}
 
 const pool = mysql.createPool({
     host: process.env.DB_HOST,
@@ -10,11 +28,7 @@ const pool = mysql.createPool({
     password: process.env.DB_PASSWORD,
     database: process.env.DB_NAME,
 
-    ssl: useSsl
-        ? {
-            minVersion: 'TLSv1.2'
-        }
-        : undefined,
+    ssl: sslOptions,
 
     waitForConnections: true,
     connectionLimit: 10,
