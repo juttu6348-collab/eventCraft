@@ -16,61 +16,132 @@ const app = express();
 const PORT = process.env.PORT || 3000;
 app.use(helmet());
 
-// Middleware - CORS configuration for multiple frontend ports
-const configuredOrigins = (
-    process.env.FRONTEND_URLS || ''
-)
-    .split(',')
-    .map((origin) => origin.trim().replace(/\/$/, ''))
-    .filter(Boolean);
+// Vercel runs behind a reverse proxy.
+app.set('trust proxy', 1);
 
-const vercelOrigins = [
-    process.env.VERCEL_URL,
-    process.env.VERCEL_BRANCH_URL,
-    process.env.VERCEL_PROJECT_PRODUCTION_URL
-]
-    .filter(Boolean)
-    .map((hostname) => {
-        const cleanHostname = hostname
-            .replace(/^https?:\/\//, '')
-            .replace(/\/$/, '');
+function normalizeOrigin(value) {
+    if (!value || typeof value !== 'string') {
+        return null;
+    }
 
-        return `https://${cleanHostname}`;
+    return value
+        .trim()
+        .replace(/\/+$/, '');
+}
+
+function firstHeaderValue(value) {
+    if (!value || typeof value !== 'string') {
+        return null;
+    }
+
+    return value
+        .split(',')[0]
+        .trim();
+}
+
+const configuredOrigins = new Set(
+    [
+        'http://localhost:5173',
+        'http://localhost:5174',
+        ...(process.env.FRONTEND_URLS || '').split(',')
+    ]
+        .map(normalizeOrigin)
+        .filter(Boolean)
+);
+
+const vercelSystemOrigins = new Set(
+    [
+        process.env.VERCEL_URL,
+        process.env.VERCEL_BRANCH_URL,
+        process.env.VERCEL_PROJECT_PRODUCTION_URL
+    ]
+        .filter(Boolean)
+        .map((value) => {
+            const origin = value.startsWith('http')
+                ? value
+                : `https://${value}`;
+
+            return normalizeOrigin(origin);
+        })
+);
+
+function getPublicRequestOrigin(req) {
+    const forwardedHost = firstHeaderValue(
+        req.headers['x-forwarded-host']
+    );
+
+    const host = forwardedHost || req.headers.host;
+
+    if (!host) {
+        return null;
+    }
+
+    const forwardedProtocol = firstHeaderValue(
+        req.headers['x-forwarded-proto']
+    );
+
+    const protocol =
+        forwardedProtocol ||
+        req.protocol ||
+        (process.env.NODE_ENV === 'production'
+            ? 'https'
+            : 'http');
+
+    return normalizeOrigin(`${protocol}://${host}`);
+}
+
+function corsOptionsDelegate(req, callback) {
+    const requestOrigin = normalizeOrigin(
+        req.headers.origin
+    );
+
+    const publicRequestOrigin =
+        getPublicRequestOrigin(req);
+
+    const isAllowed =
+        !requestOrigin ||
+        configuredOrigins.has(requestOrigin) ||
+        vercelSystemOrigins.has(requestOrigin) ||
+        requestOrigin === publicRequestOrigin;
+
+    if (!isAllowed) {
+        console.error('CORS request blocked:', {
+            requestOrigin,
+            publicRequestOrigin,
+            configuredOrigins: [...configuredOrigins],
+            vercelSystemOrigins: [...vercelSystemOrigins]
+        });
+
+        const error = new Error(
+            `Not allowed by CORS: ${requestOrigin}`
+        );
+
+        error.status = 403;
+
+        return callback(error);
+    }
+
+    return callback(null, {
+        origin: requestOrigin || false,
+        credentials: true,
+        methods: [
+            'GET',
+            'HEAD',
+            'POST',
+            'PUT',
+            'PATCH',
+            'DELETE',
+            'OPTIONS'
+        ],
+        allowedHeaders: [
+            'Content-Type',
+            'Authorization'
+        ],
+        optionsSuccessStatus: 204
     });
+}
 
-const allowedOrigins = new Set([
-    'http://localhost:5173',
-    ...configuredOrigins,
-    ...vercelOrigins
-]);
-
-app.use(cors({
-    origin(origin, callback) {
-        const normalizedOrigin = origin
-            ? origin.replace(/\/$/, '')
-            : null;
-
-        if (
-            !normalizedOrigin ||
-            allowedOrigins.has(normalizedOrigin)
-        ) {
-            return callback(null, true);
-        }
-
-        console.error(
-            'CORS blocked origin:',
-            normalizedOrigin
-        );
-
-        return callback(
-            new Error(
-                `Not allowed by CORS: ${normalizedOrigin}`
-            )
-        );
-    },
-
-    credentials: true
-}));
+app.use(cors(corsOptionsDelegate));
 app.use(express.json());
 app.use(express.urlencoded({ extended: true }));
 
