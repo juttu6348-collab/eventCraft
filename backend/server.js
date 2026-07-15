@@ -17,26 +17,55 @@ const PORT = process.env.PORT || 3000;
 app.use(helmet());
 
 // Middleware - CORS configuration for multiple frontend ports
-const allowedOrigins = (
-    process.env.FRONTEND_URLS ||
-    'http://localhost:5173'
+const configuredOrigins = (
+    process.env.FRONTEND_URLS || ''
 )
     .split(',')
-    .map((origin) => origin.trim())
+    .map((origin) => origin.trim().replace(/\/$/, ''))
     .filter(Boolean);
+
+const vercelOrigins = [
+    process.env.VERCEL_URL,
+    process.env.VERCEL_BRANCH_URL,
+    process.env.VERCEL_PROJECT_PRODUCTION_URL
+]
+    .filter(Boolean)
+    .map((hostname) => {
+        const cleanHostname = hostname
+            .replace(/^https?:\/\//, '')
+            .replace(/\/$/, '');
+
+        return `https://${cleanHostname}`;
+    });
+
+const allowedOrigins = new Set([
+    'http://localhost:5173',
+    ...configuredOrigins,
+    ...vercelOrigins
+]);
 
 app.use(cors({
     origin(origin, callback) {
-        if (!origin) {
+        const normalizedOrigin = origin
+            ? origin.replace(/\/$/, '')
+            : null;
+
+        if (
+            !normalizedOrigin ||
+            allowedOrigins.has(normalizedOrigin)
+        ) {
             return callback(null, true);
         }
 
-        if (allowedOrigins.includes(origin)) {
-            return callback(null, true);
-        }
+        console.error(
+            'CORS blocked origin:',
+            normalizedOrigin
+        );
 
         return callback(
-            new Error('Not allowed by CORS')
+            new Error(
+                `Not allowed by CORS: ${normalizedOrigin}`
+            )
         );
     },
 
