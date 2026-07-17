@@ -1,259 +1,917 @@
-# EventCraft - Event Management Platform
+# EventCraft
 
-Create beautiful, personalized celebration pages for birthdays, weddings, anniversaries, and more!
+**EventCraft** is a full-stack event and digital celebration platform for creating, managing, and sharing personalized event microsites for birthdays, weddings, anniversaries, graduations, engagements, baby showers, and other special occasions.
 
-## 🎉 About EventCraft
+**Live application:** https://event-craft-pvmq.vercel.app  
+**API health check:** https://event-craft-pvmq.vercel.app/api/health  
+**Repository:** https://github.com/juttu6348-collab/eventCraft
 
-EventCraft is a comprehensive web-based event management platform that allows users to create, customize, and share personalized celebration pages. Built with modern web technologies, it provides an intuitive interface for crafting memorable digital experiences.
+---
 
-## 🏗️ Technology Stack
+## Table of Contents
 
-**Backend:**
-- Node.js + Express.js
-- MySQL Database
-- JWT Authentication
-- Bcrypt Password Hashing
-- Multer File Upload
-- CORS Enabled
+- [Overview](#overview)
+- [Current Status](#current-status)
+- [Core Features](#core-features)
+- [Architecture](#architecture)
+- [Technology Stack](#technology-stack)
+- [Project Structure](#project-structure)
+- [Getting Started](#getting-started)
+- [Environment Variables](#environment-variables)
+- [Database Setup](#database-setup)
+- [Running Locally](#running-locally)
+- [Production Deployment](#production-deployment)
+- [API Reference](#api-reference)
+- [Database Model](#database-model)
+- [Security](#security)
+- [Image Uploads](#image-uploads)
+- [Testing](#testing)
+- [Troubleshooting](#troubleshooting)
+- [Known Limitations](#known-limitations)
+- [Recommended Next Improvements](#recommended-next-improvements)
+- [Team](#team)
+- [License](#license)
 
-**Frontend:**
-- React 19.0.0
-- Vite Build Tool
-- React Router DOM
-- Axios for API calls
-- Bootstrap 5 + React Bootstrap
-- SASS for styling
-- Framer Motion animations
+---
 
-## 🌟 Features
+## Overview
 
-- **User Authentication** - Secure registration and login with JWT tokens
-- **Guest Mode** - Try the platform without creating an account
-- **Event Creation** - Multiple event types (Birthday, Wedding, Anniversary, etc.)
-- **Custom Themes** - Beautiful pre-designed themes and color schemes
-- **Photo Galleries** - Upload and organize event photos
-- **Event Microsite** - Each event gets a unique, shareable URL
-- **User Dashboard** - Manage all your events in one place
-- **Admin Panel** - Platform administration and user management
-- **Analytics** - Track event views and engagement
-- **Responsive Design** - Works perfectly on all devices
+EventCraft allows users to create unique and shareable digital event pages with personalized messages, themes, event details, photo galleries, and optional custom content.
 
-## 📁 Project Structure
+The application includes:
 
+- A public marketing website
+- Email/password authentication
+- Guest access
+- A protected user dashboard
+- Event creation and management
+- Public event microsites
+- Event analytics
+- An administrative dashboard
+- Role-based access control
+
+The frontend and backend are maintained in the same repository and are deployed through Vercel as separate services connected by `/api` rewrites.
+
+---
+
+## Current Status
+
+EventCraft is deployed and operational in production.
+
+| Component | Status |
+|---|---|
+| React frontend | Deployed |
+| Express API | Deployed |
+| TiDB Cloud database | Connected |
+| Authentication | Working |
+| Dynamic CORS | Configured |
+| Admin authorization | Implemented |
+| Vercel service routing | Configured |
+| API health endpoint | Available |
+
+---
+
+## Core Features
+
+### Authentication and Accounts
+
+- User registration with email, password, and display name
+- Secure email/password login
+- Password hashing with bcrypt
+- JWT-based authentication
+- Seven-day JWT expiration
+- Guest account creation
+- Guest-to-user account conversion
+- Current-user profile retrieval
+- Display name and profile photo URL updates
+- Account deletion
+- Client-side logout
+- Suspended-account login protection
+- Automatic handling of unauthorized API responses
+
+### Event Creation and Management
+
+- Create personalized events
+- Generate unique, shareable event slugs
+- Support multiple event types
+- Set sender and receiver names
+- Add relationship information
+- Set an event date
+- Add a personalized message
+- Choose a visual theme
+- Configure enabled event pages
+- Add optional custom-page content
+- Upload multiple event images
+- View public event microsites
+- Edit owned events
+- Delete owned events
+- Duplicate existing events
+- Mark events as favorites
+- Track event views and shares
+- View per-event analytics
+
+### User Dashboard
+
+- View all events created by the authenticated user
+- Display total event and view statistics
+- Identify the most-viewed event
+- Search and filter events through the dashboard interface
+- Switch between supported dashboard views
+- Duplicate, favorite, or delete events
+- Access event analytics and sharing options
+
+### Admin Panel
+
+- Admin-only protected routes
+- View platform statistics
+- View all users
+- View all events
+- Change user roles
+- Suspend or reactivate users
+- Delete users
+- Delete events
+- Bulk-delete selected events
+- Prevent an administrator from deleting their own account through the admin endpoint
+- Review user, guest, administrator, event, and view totals
+
+### User Experience
+
+- Responsive layout
+- Public home, about, themes, events, and how-it-works pages
+- Light and dark interface support
+- React-based toast notifications
+- Animated UI elements
+- Shareable event links
+- QR-code support
+- Protected user and admin routes
+- Single-page application routing
+
+---
+
+## Architecture
+
+```text
+User Browser
+     |
+     v
+Vercel Frontend Service
+React 19 + Vite
+     |
+     | /api/*
+     v
+Vercel Backend Service
+Node.js + Express
+     |
+     v
+TiDB Cloud
+MySQL-compatible database
 ```
+
+### Request Flow
+
+1. The React frontend sends requests to `/api`.
+2. Vercel rewrites `/api/*` requests to the backend service.
+3. The Express backend validates authentication and authorization.
+4. The backend executes parameterized SQL queries through `mysql2`.
+5. The API returns JSON responses to the frontend.
+
+---
+
+## Technology Stack
+
+### Frontend
+
+| Technology | Purpose |
+|---|---|
+| React 19.2 | User interface |
+| React DOM 19.2 | Browser rendering |
+| Vite 7.2 | Development and production builds |
+| React Router DOM 7.10 | Client-side routing |
+| Axios | API requests |
+| Bootstrap 5.3 | Base UI framework |
+| React Bootstrap | React UI components |
+| SASS and CSS | Styling |
+| Framer Motion | Animations |
+| Lucide React | Icons |
+| React Hot Toast | Notifications |
+| Recharts | Charts and analytics |
+| QRCode React | QR-code generation |
+| date-fns | Date utilities |
+| React Confetti | Celebration effects |
+
+### Backend
+
+| Technology | Purpose |
+|---|---|
+| Node.js 22 | JavaScript runtime |
+| Express 4 | REST API |
+| mysql2 | TiDB/MySQL connection pooling and queries |
+| JSON Web Token | Authentication |
+| bcryptjs | Password hashing |
+| Multer | Multipart image uploads |
+| Helmet | Security headers |
+| CORS | Origin control |
+| express-rate-limit | Authentication rate limiting |
+| express-validator | Request-validation support |
+| dotenv | Environment configuration |
+| Cloudinary SDK | Installed for cloud-media integration |
+
+### Infrastructure
+
+| Service | Purpose |
+|---|---|
+| Vercel | Frontend and backend deployment |
+| Vercel Services | Monorepo service routing |
+| TiDB Cloud | Production relational database |
+| GitHub | Source control |
+
+---
+
+## Project Structure
+
+```text
 EventCraft/
-├── backend/              # Node.js/Express API Server
-│   ├── config/          # Database config & schema
-│   ├── middleware/      # Auth & upload middleware
-│   ├── routes/          # API routes
-│   ├── uploads/         # Image storage
-│   └── server.js        # Main server file
-├── src/                 # React Frontend
-│   ├── components/      # Reusable components
-│   ├── pages/          # Page components
-│   ├── context/        # React Context (Auth)
-│   ├── services/       # API service layer
-│   └── utils/          # Utility functions
-└── public/             # Static assets
+├── backend/
+│   ├── config/
+│   │   ├── database.js
+│   │   └── schema.sql
+│   ├── middleware/
+│   │   ├── auth.js
+│   │   └── upload.js
+│   ├── routes/
+│   │   ├── auth.js
+│   │   ├── events.js
+│   │   ├── dashboard.js
+│   │   └── admin.js
+│   ├── uploads/
+│   ├── package.json
+│   └── server.js
+├── public/
+├── screenshots/
+├── src/
+│   ├── assets/
+│   ├── components/
+│   ├── context/
+│   ├── pages/
+│   │   └── Admin/
+│   ├── services/
+│   ├── utils/
+│   ├── App.jsx
+│   └── main.jsx
+├── .gitignore
+├── package.json
+├── vercel.json
+├── vite.config.js
+└── README.md
 ```
 
-## 🚀 Getting Started
+---
+
+## Getting Started
 
 ### Prerequisites
-- Node.js (v14 or higher)
-- MySQL Server (v8.0 or higher)
-- npm package manager
 
-### Installation
+Install the following:
 
-**1. Clone the repository**
+- Node.js 22.x
+- npm
+- Git
+- A MySQL-compatible database:
+  - TiDB Cloud for hosted development or production
+  - MySQL 8 for local development
+
+Check the installed versions:
+
 ```bash
-git clone <repository-url>
-cd EventCraft
+node --version
+npm --version
+git --version
 ```
 
-**2. Install dependencies**
-```bash
-# Install frontend dependencies
-npm install
+### Clone the Repository
 
-# Install backend dependencies
+```bash
+git clone https://github.com/juttu6348-collab/eventCraft.git
+cd eventCraft
+```
+
+### Install Frontend Dependencies
+
+```bash
+npm install
+```
+
+### Install Backend Dependencies
+
+```bash
 cd backend
 npm install
 cd ..
 ```
 
-**3. Setup MySQL Database**
+### Cloudinary Variables
 
-Using XAMPP/WAMP:
-1. Start MySQL server
-2. Open phpMyAdmin (http://localhost/phpmyadmin)
-3. Import `backend/config/schema.sql`
+The Cloudinary SDK is installed, but the current upload middleware still writes files to local disk. When Cloudinary storage is connected, use environment variables such as:
 
-Or using command line:
+```env
+CLOUDINARY_CLOUD_NAME=your_cloud_name
+CLOUDINARY_API_KEY=your_api_key
+CLOUDINARY_API_SECRET=your_api_secret
+```
+
+Do not expose `CLOUDINARY_API_SECRET` in frontend code.
+
+---
+
+## Database Setup
+
+EventCraft uses a MySQL-compatible relational schema with the following primary tables:
+
+- `users`
+- `events`
+- `event_photos`
+- `event_stats`
+- `custom_pages`
+
+### Important Schema Warning
+
+The current `backend/config/schema.sql` file contains destructive database statements, including:
+
+```sql
+DROP DATABASE IF EXISTS eventcraft;
+```
+
+Do not run this file against a production database or any database containing important data.
+
+Use it only for a new local development database after reviewing the full script.
+
+### Local Database Initialization
+
+Using the MySQL command line:
+
 ```bash
 mysql -u root -p < backend/config/schema.sql
 ```
 
-Backend configuration is in `backend/.env`:
-```env
-DB_HOST=localhost
-DB_USER=root
-DB_PASSWORD=
-DB_NAME=eventcraft
-PORT=3000
-JWT_SECRET=your-secret-key-here
-FRONTEND_URL=http://localhost:5173
-```
+Or import the schema through MySQL Workbench or phpMyAdmin.
 
-Frontend configuration is in `.env`:
-```env
-VITE_API_URL=http://localhost:3000/api
-```
+### TiDB Cloud
 
-**5. Start the Application**
+For production:
 
-Terminal 1 - Backend:
+1. Create or select a TiDB Cloud cluster.
+2. Add the required IP or network access rules.
+3. Create the `eventcraft` database and required tables.
+4. Add the TiDB connection values to Vercel environment variables.
+5. Redeploy after changing environment variables.
+6. Verify the connection through the API health and authentication endpoints.
+
+## Running Locally
+
+### Start the Backend
+
+Open the first terminal:
+
 ```bash
 cd backend
 npm start
 ```
 
-Terminal 2 - Frontend:
+For development with automatic restart:
+
+```bash
+cd backend
+npm run dev
+```
+
+The backend runs by default at:
+
+```text
+http://localhost:3000
+```
+
+### Start the Frontend
+
+Open a second terminal from the project root:
+
 ```bash
 npm run dev
 ```
 
-**6. Access the Application**
-- Frontend: http://localhost:5173
-- Backend API: http://localhost:3000/api
-- API Health Check: http://localhost:3000/api/health
+The frontend normally runs at:
 
-**Admin Account:**
-- Email: admin@eventcraft.com
-- Password: admin123
+```text
+http://localhost:5173
+```
 
-## � API Endpoints
+### Verify the API
+
+```bash
+curl http://localhost:3000/api/health
+```
+
+Expected response:
+
+```json
+{
+  "status": "OK",
+  "message": "EventCraft API is running"
+}
+```
+
+---
+
+## Production Deployment
+
+EventCraft uses `vercel.json` to deploy the frontend and backend as separate services in the same Vercel project.
+
+### Service Configuration
+
+- Frontend root: `.`
+- Frontend framework: Vite
+- Backend root: `backend`
+- Backend framework: Express
+- Backend entry point: `server.js`
+- `/api/*` requests are routed to the backend
+- All other requests are routed to the frontend
+- Frontend routes are rewritten to `index.html`
+
+### Deployment Steps
+
+1. Push the latest code to the `main` branch.
+2. Connect the GitHub repository to Vercel.
+3. Add all production environment variables.
+4. Confirm `VITE_API_URL=/api`.
+5. Deploy the project.
+6. Wait for the deployment status to become `Ready`.
+7. Verify the health endpoint.
+8. Test registration, login, event creation, dashboard access, and admin authorization.
+
+### Production Verification
+
+```bash
+curl -i https://event-craft-pvmq.vercel.app/api/health
+```
+
+Test login without exposing credentials in shared logs:
+
+```bash
+curl -i -X POST \
+  "https://event-craft-pvmq.vercel.app/api/auth/login" \
+  -H "Origin: https://event-craft-pvmq.vercel.app" \
+  -H "Content-Type: application/json" \
+  -d '{"email":"your-email@example.com","password":"your-password"}'
+```
+
+A successful response should return `200 OK` with a user object and JWT token.
+
+Never paste a real production JWT token into public documentation or support messages.
+
+---
+
+## API Reference
+
+Base URL:
+
+```text
+/api
+```
+
+Protected endpoints require:
+
+```http
+Authorization: Bearer <jwt-token>
+```
+
+### Health
+
+| Method | Endpoint | Access | Description |
+|---|---|---|---|
+| GET | `/api/health` | Public | Check API availability |
 
 ### Authentication
-- `POST /api/auth/register` - User registration
-- `POST /api/auth/login` - User login
-- `POST /api/auth/guest` - Guest login
-- `GET /api/auth/me` - Get current user
-- `PUT /api/auth/profile` - Update profile
-- `DELETE /api/auth/account` - Delete account
-- `POST /api/auth/convert-guest` - Convert guest to user
-- `POST /api/auth/logout` - Logout
+
+| Method | Endpoint | Access | Description |
+|---|---|---|---|
+| POST | `/api/auth/register` | Public | Register a new user |
+| POST | `/api/auth/login` | Public | Log in with email and password |
+| POST | `/api/auth/guest` | Public | Create a guest account |
+| GET | `/api/auth/me` | Authenticated | Get the current user |
+| PUT | `/api/auth/profile` | Authenticated | Update profile information |
+| DELETE | `/api/auth/account` | Authenticated | Delete the current account |
+| POST | `/api/auth/convert-guest` | Guest | Convert a guest into a user |
+| POST | `/api/auth/logout` | Authenticated | Log out on the client |
 
 ### Events
-- `POST /api/events` - Create event (with images)
-- `GET /api/events/:slug` - Get event by slug
-- `PUT /api/events/:id` - Update event
-- `DELETE /api/events/:id` - Delete event
-- `POST /api/events/:id/duplicate` - Duplicate event
-- `PUT /api/events/:id/favorite` - Toggle favorite
-- `GET /api/events/:id/analytics` - Get event analytics
+
+| Method | Endpoint | Access | Description |
+|---|---|---|---|
+| POST | `/api/events` | Authenticated | Create an event with optional images |
+| GET | `/api/events/:slug` | Public | Get an event by its slug |
+| PUT | `/api/events/:id` | Owner/Admin | Update an event |
+| DELETE | `/api/events/:id` | Owner/Admin | Delete an event |
+| POST | `/api/events/:id/duplicate` | Owner | Duplicate an event |
+| PUT | `/api/events/:id/favorite` | Owner | Change favorite status |
+| GET | `/api/events/:id/analytics` | Authenticated | Get event analytics |
 
 ### Dashboard
-- `GET /api/dashboard/events` - Get user's events
-- `GET /api/dashboard/analytics` - Get user analytics
 
-### Admin (Requires admin role)
-- `GET /api/admin/users` - Get all users
-- `GET /api/admin/events` - Get all events
-- `GET /api/admin/stats` - Get platform statistics
-- `PUT /api/admin/users/:id/role` - Update user role
-- `PUT /api/admin/users/:id/suspend` - Suspend/unsuspend user
-- `DELETE /api/admin/users/:id` - Delete user
-- `DELETE /api/admin/events/:id` - Delete event
-- `POST /api/admin/events/bulk-delete` - Bulk delete events
+| Method | Endpoint | Access | Description |
+|---|---|---|---|
+| GET | `/api/dashboard/events` | Authenticated | Get the user's events |
+| GET | `/api/dashboard/analytics` | Authenticated | Get user-level analytics |
 
-## �️ Database Schema
+### Admin
 
-### Tables
-- **users** - User accounts and authentication
-- **events** - Event information and configuration
-- **event_photos** - Photo gallery for events
-- **event_stats** - View and engagement tracking
-- **custom_pages** - Custom content pages
+All admin routes require a valid JWT with the `admin` role.
 
-All tables use InnoDB engine with proper foreign key constraints and indexes for optimal performance.
+| Method | Endpoint | Description |
+|---|---|---|
+| GET | `/api/admin/users` | Get all users |
+| GET | `/api/admin/events` | Get all events |
+| GET | `/api/admin/stats` | Get platform statistics |
+| PUT | `/api/admin/users/:id/role` | Update a user's role |
+| PUT | `/api/admin/users/:id/suspend` | Suspend or reactivate a user |
+| DELETE | `/api/admin/users/:id` | Delete a user |
+| DELETE | `/api/admin/events/:id` | Delete an event |
+| POST | `/api/admin/events/bulk-delete` | Delete multiple events |
 
-## 🎨 Event Types
+---
 
-- Birthday
-- Wedding
-- Anniversary
-- Graduation
-- Baby Shower
-- Engagement
-- Holiday Celebration
-- Custom Events
+## Database Model
 
-## 🔧 Development
+### `users`
 
-### Building for Production
+Stores:
 
-Frontend:
+- Email
+- Password hash
+- Display name
+- Profile photo URL
+- Role
+- Account status
+- Creation date
+- Last login
+- Guest conversion status
+- Anonymous-account flag
+
+Supported roles:
+
+```text
+user
+guest
+admin
+```
+
+Supported statuses:
+
+```text
+active
+suspended
+```
+
+### `events`
+
+Stores:
+
+- Unique slug
+- Event type
+- Sender name
+- Receiver name
+- Relationship
+- Event date
+- Main message
+- Theme
+- Enabled pages
+- Owner
+- Favorite state
+- Created and updated timestamps
+
+### `event_photos`
+
+Stores event image references and display order.
+
+### `event_stats`
+
+Stores event views, shares, and last-viewed time.
+
+### `custom_pages`
+
+Stores optional custom page titles and body content.
+
+### Relationships
+
+```text
+users 1 ─── N events
+events 1 ─── N event_photos
+events 1 ─── 1 event_stats
+events 1 ─── N custom_pages
+```
+
+Foreign keys and cascade rules protect relational consistency when events are deleted.
+
+---
+
+## Security
+
+The current application includes:
+
+- bcrypt password hashing
+- JWT signature validation
+- Seven-day access-token expiration
+- Role-based admin middleware
+- Owner checks for event updates and deletion
+- Account suspension checks
+- Parameterized SQL queries
+- Helmet security headers
+- Dynamic CORS validation
+- Authentication rate limiting
+- Image type validation
+- Five-megabyte image size limit
+- `.env` exclusion through `.gitignore`
+
+### Authentication Rate Limit
+
+Authentication routes are limited to:
+
+```text
+50 requests per 15 minutes
+```
+
+### Production Security Checklist
+
+Before every production release:
+
+- Rotate any exposed password
+- Rotate an exposed JWT secret
+- Verify no secrets exist in Git history
+- Restrict TiDB network access
+- Use different secrets for development and production
+- Use a long, random JWT secret
+- Test normal-user and admin authorization separately
+- Review runtime logs without printing passwords or tokens
+- Confirm production environment variables are applied to the correct Vercel environment
+
+---
+
+## Image Uploads
+
+The current backend accepts:
+
+- JPEG
+- JPG
+- PNG
+- GIF
+- WebP
+
+Limits:
+
+- Up to 10 images per event
+- Maximum 5 MB per image
+
+### Production Storage Notice
+
+The current `upload.js` middleware uses local disk storage under:
+
+```text
+backend/uploads
+```
+
+Local disk uploads are suitable for local development, but they should not be treated as permanent production storage in a serverless deployment.
+
+For reliable production uploads:
+
+1. Connect the existing Cloudinary SDK or another object-storage provider.
+2. Upload images directly to cloud storage.
+3. Save the returned secure URL in `event_photos.photo_url`.
+4. Delete the cloud asset when its event or photo is deleted.
+5. Validate file type, size, and upload ownership on the backend.
+
+---
+
+## Testing
+
+### Available Commands
+
+Frontend development:
+
+```bash
+npm run dev
+```
+
+Frontend production build:
+
 ```bash
 npm run build
 ```
 
-Backend:
-```bash
-# Set NODE_ENV=production in .env
-npm start
-```
+Frontend linting:
 
-### Linting
 ```bash
 npm run lint
 ```
 
-## 📝 Documentation
+Frontend production preview:
 
-- [Project Report](PROJECT_REPORT.md) - Complete project documentation
-- [Backend README](backend/README.md) - Backend API documentation
+```bash
+npm run preview
+```
 
-## 🛡️ Security Features
+Backend development:
 
-- **Password Hashing** - Bcrypt with salt rounds
-- **JWT Authentication** - Secure token-based auth
-- **Input Validation** - Server-side validation
-- **File Upload Restrictions** - Type and size limits
-- **CORS Protection** - Configured allowed origins
-- **SQL Injection Prevention** - Parameterized queries
+```bash
+cd backend
+npm run dev
+```
 
-## 🐛 Troubleshooting
+Backend production start:
 
-**Database Connection Failed:**
-- Ensure MySQL is running
-- Verify credentials in `backend/.env`
-- Check if `eventcraft` database exists
+```bash
+cd backend
+npm start
+```
 
-**Port Already in Use:**
-- Change PORT in `backend/.env`
-- Update VITE_API_URL in frontend `.env`
+### Production Smoke Test
 
-**CORS Errors:**
-- Backend CORS is configured for ports 5173 and 5174
-- Check FRONTEND_URL in `backend/.env`
+Test these flows after every deployment:
 
-## � Team
+1. Open the public home page.
+2. Register a new test user.
+3. Log in with valid credentials.
+4. Verify invalid-login handling.
+5. Create an event.
+6. Open the public event URL.
+7. Edit the event.
+8. Duplicate the event.
+9. Favorite and unfavorite the event.
+10. Review dashboard analytics.
+11. Delete a test event.
+12. Log in as an administrator.
+13. Verify user and event management.
+14. Confirm a normal user cannot open admin routes.
+15. Test on desktop and mobile.
+16. Refresh important routes directly.
+17. Review Vercel runtime logs for unexpected errors.
 
-- **Muhammad Jawad Rehmat Qureshi** (3323)
-- **Muhammad Usman** (3288)
-- **Hamza Saeed** (3321)
+---
 
-## 📄 License
+## Troubleshooting
 
-This project is developed as part of academic coursework.
+### API Health Check Fails
 
-## 🙏 Acknowledgments
+Run:
 
-- React Team for the amazing framework
-- Express.js community
-- MySQL developers
+```bash
+curl -i https://event-craft-pvmq.vercel.app/api/health
+```
+
+Then check:
+
+- Latest deployment is `Ready`
+- Backend service entry point is `server.js`
+- `/api/*` rewrite targets the backend service
+- Production environment variables are configured
+- Vercel runtime logs contain no startup error
+
+### Login Returns `500`
+
+Check Vercel runtime logs for the backend exception.
+
+Common causes include:
+
+- Incorrect TiDB credentials
+- Missing `JWT_SECRET`
+- Missing database tables or columns
+- Database network restrictions
+- SQL errors
+- Production environment variables not applied
+- Deployment not redeployed after changing environment variables
+
+### Login Returns `401`
+
+A JSON response such as:
+
+```json
+{
+  "error": "Invalid credentials"
+}
+```
+
+normally means the user was not found or the password did not match.
+
+A Vercel response containing a cookie similar to `_vercel_sso_nonce` may indicate Vercel Deployment Protection intercepted the request before it reached EventCraft.
+
+### CORS Error
+
+Confirm `FRONTEND_URLS` contains the exact frontend origins:
+
+```env
+FRONTEND_URLS=https://event-craft-pvmq.vercel.app,http://localhost:5173
+```
+
+Do not include unnecessary paths such as `/login` or `/api`.
+
+After changing a Vercel environment variable, redeploy the application.
+
+### Database Connection Failure
+
+Check:
+
+- `DB_HOST`
+- `DB_PORT`
+- `DB_USER`
+- `DB_PASSWORD`
+- `DB_NAME`
+- SSL requirements
+- TiDB allow-list or connection settings
+- Whether the correct Vercel environment was updated
+
+Never print the database password in logs.
+
+### Direct Frontend Route Returns `404`
+
+Confirm the frontend service rewrites routes to:
+
+```text
+/index.html
+```
+
+This is required for React Router routes opened directly in the browser.
+
+### `dotenv` Cannot Be Found
+
+Run backend commands from the backend directory:
+
+```bash
+cd backend
+npm install
+node server.js
+```
+
+### Port Already in Use
+
+On Windows:
+
+```cmd
+taskkill /F /T /IM node.exe
+```
+
+Or change the backend `PORT`.
+
+---
+
+## Known Limitations
+
+The following items are not fully implemented in the current codebase:
+
+- Password-reset email flow
+- Google sign-in
+- Refresh-token rotation
+- Server-side JWT revocation
+- Persistent production media storage through Cloudinary
+- Automated frontend and backend test suites
+- Continuous integration pipeline
+- Email invitations and notifications
+- Advanced audit logging
+- Advanced analytics exports
+
+The logout endpoint confirms logout, but the current authentication model relies on removing the JWT from the client.
+
+---
+
+## Recommended Next Improvements
+
+Recommended implementation order:
+
+1. Replace local image storage with Cloudinary
+2. Add password reset and email verification
+3. Add automated API and frontend tests
+4. Add structured production logging and monitoring
+5. Add refresh-token rotation and session revocation
+6. Add validation consistently with `express-validator`
+7. Add database migrations instead of destructive schema initialization
+8. Add CI checks for build, lint, and tests
+9. Add event invitations and email notifications
+10. Add audit logs for administrator actions
+
+
+## License
+
+The backend package currently declares the ISC license.
+
+The project was originally developed as part of academic coursework. Confirm the intended repository-wide license before public distribution or commercial reuse.
+
+---
+
+## Acknowledgments
+
+- React
+- Vite
+- Express
+- TiDB
+- MySQL
+- Vercel
+- Bootstrap
 - All open-source contributors
 
 ---
