@@ -1,5 +1,84 @@
 import api from './api';
 
+const MAX_PHOTOS = 10;
+const MAX_PHOTO_SIZE_BYTES = 5 * 1024 * 1024;
+
+function validatePhotos(files) {
+    if (files.length > MAX_PHOTOS) {
+        throw new Error(
+            `You can upload a maximum of ${MAX_PHOTOS} photos.`
+        );
+    }
+
+    for (const file of files) {
+        if (file.size > MAX_PHOTO_SIZE_BYTES) {
+            throw new Error(
+                `"${file.name}" exceeds the maximum size of 5 MB.`
+            );
+        }
+
+        if (
+            file.type &&
+            !file.type.startsWith('image/')
+        ) {
+            throw new Error(
+                `"${file.name}" is not a valid image.`
+            );
+        }
+    }
+}
+
+async function getCloudinaryUploadSignature() {
+    const response = await api.post(
+        '/events/upload-signature'
+    );
+
+    return response.data;
+}
+
+async function uploadPhotoToCloudinary(
+    file,
+    uploadConfiguration
+) {
+    const {
+        cloudName,
+        apiKey,
+        timestamp,
+        signature,
+        folder
+    } = uploadConfiguration;
+
+    const uploadData = new FormData();
+
+    uploadData.append('file', file);
+    uploadData.append('api_key', apiKey);
+    uploadData.append(
+        'timestamp',
+        String(timestamp)
+    );
+    uploadData.append('signature', signature);
+    uploadData.append('folder', folder);
+
+    const response = await fetch(
+        `https://api.cloudinary.com/v1_1/${cloudName}/image/upload`,
+        {
+            method: 'POST',
+            body: uploadData
+        }
+    );
+
+    const result = await response.json();
+
+    if (!response.ok) {
+        throw new Error(
+            result?.error?.message ||
+                `Failed to upload "${file.name}".`
+        );
+    }
+
+    return result.secure_url;
+}
+
 // Helper function to generate slug
 function generateSlug(senderName, receiverName) {
     const base = `${senderName}-${receiverName}`
@@ -14,10 +93,33 @@ function generateSlug(senderName, receiverName) {
  * Upload images - handled by API now
  * Files will be sent as FormData to the backend
  */
-export async function uploadImages(files, slug) {
-    console.log('📸 Images will be uploaded with event creation');
-    // This function is kept for compatibility but images are now uploaded with createEvent
-    return [];
+export async function uploadImages(files = []) {
+    const normalizedFiles = Array.from(files);
+
+    if (normalizedFiles.length === 0) {
+        return [];
+    }
+
+    validatePhotos(normalizedFiles);
+
+    const uploadConfiguration =
+        await getCloudinaryUploadSignature();
+
+    const uploadedUrls = [];
+
+    // Sequential upload is slower than full parallel upload,
+    // but is more stable and gives clearer errors.
+    for (const file of normalizedFiles) {
+        const secureUrl =
+            await uploadPhotoToCloudinary(
+                file,
+                uploadConfiguration
+            );
+
+        uploadedUrls.push(secureUrl);
+    }
+
+    return uploadedUrls;
 }
 
 /**
@@ -27,51 +129,51 @@ export async function uploadImages(files, slug) {
  */
 export async function createEvent(eventData) {
     try {
-        console.log('🚀 Creating event...', eventData);
-
-        // Validate required fields
-        if (!eventData.senderName || !eventData.receiverName) {
-            throw new Error('Sender name and receiver name are required');
+        if (
+            !eventData.senderName ||
+            !eventData.receiverName
+        ) {
+            throw new Error(
+                'Sender name and receiver name are required.'
+            );
         }
 
-        // Create FormData for file upload
-        const formData = new FormData();
+        const photoUrls = await uploadImages(
+            eventData.photos || []
+        );
 
-        // Add event data fields
-        formData.append('eventType', eventData.eventType || 'birthday');
-        formData.append('senderName', eventData.senderName);
-        formData.append('receiverName', eventData.receiverName);
-        formData.append('relationship', eventData.relationship || '');
-        formData.append('date', eventData.date || '');
-        formData.append('mainMessage', eventData.mainMessage || '');
-        formData.append('theme', eventData.theme || 'elegant');
-        formData.append('enabledPages', JSON.stringify(eventData.enabledPages || ['home']));
+        const response = await api.post('/events', {
+            eventType:
+                eventData.eventType || 'birthday',
 
-        // Add custom page data if exists
-        if (eventData.customPageData) {
-            formData.append('customPageTitle', eventData.customPageData.title || '');
-            formData.append('customPageBody', eventData.customPageData.body || '');
-        }
+            senderName: eventData.senderName,
+            receiverName: eventData.receiverName,
+            relationship:
+                eventData.relationship || '',
+            date: eventData.date || '',
+            mainMessage:
+                eventData.mainMessage || '',
+            theme: eventData.theme || 'elegant',
 
-        // Add photos if they exist
-        if (eventData.photos && eventData.photos.length > 0) {
-            console.log(`📸 Adding ${eventData.photos.length} photos...`);
-            for (const photo of eventData.photos) {
-                formData.append('photos', photo);
-            }
-        }
+            enabledPages:
+                eventData.enabledPages || ['home'],
 
-        // Send to API
-        const response = await api.post('/events', formData, {
-            headers: {
-                'Content-Type': 'multipart/form-data'
-            }
+            customPageTitle:
+                eventData.customPageData?.title || '',
+
+            customPageBody:
+                eventData.customPageData?.body || '',
+
+            photoUrls
         });
 
-        console.log('✅ Event created successfully!', response.data.slug);
         return response.data.slug;
     } catch (error) {
-        console.error('❌ Error creating event:', error);
+        console.error(
+            'Error creating event:',
+            error
+        );
+
         throw error;
     }
 }

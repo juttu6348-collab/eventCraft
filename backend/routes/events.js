@@ -1,9 +1,120 @@
+
+const multer = require('multer');
 const express = require('express');
 const router = express.Router();
 const { pool } = require('../config/database');
 const { authMiddleware, optionalAuthMiddleware } = require('../middleware/auth');
-const upload = require('../middleware/upload');
-const cloudinary = require('../config/cloudinary');
+const {
+    cloudinary,
+    ensureCloudinaryConfigured
+} = require('../config/cloudinary');
+
+const ALLOWED_ADDITIONAL_PAGES = new Set([
+    'letter',
+    'gallery',
+    'memories',
+    'surprise',
+    'custom'
+]);
+
+function normalizeEnabledPages(value) {
+    let parsedPages = value;
+
+    if (typeof parsedPages === 'string') {
+        try {
+            parsedPages = JSON.parse(parsedPages);
+        } catch {
+            const error = new Error('Invalid page selection.');
+            error.status = 400;
+            throw error;
+        }
+    }
+
+    if (!Array.isArray(parsedPages)) {
+        const error = new Error(
+            'Please select exactly one page. Home is included automatically.'
+        );
+
+        error.status = 400;
+        throw error;
+    }
+
+    const additionalPages = [
+        ...new Set(
+            parsedPages.filter((pageId) => pageId !== 'home')
+        )
+    ];
+
+    if (
+        additionalPages.length !== 1 ||
+        !ALLOWED_ADDITIONAL_PAGES.has(additionalPages[0])
+    ) {
+        const error = new Error(
+            'Please select exactly one page. Home is included automatically.'
+        );
+
+        error.status = 400;
+        throw error;
+    }
+
+    return ['home', additionalPages[0]];
+}
+
+function normalizePhotoUrls(value) {
+    if (value === undefined || value === null) {
+        return [];
+    }
+
+    if (!Array.isArray(value)) {
+        const error = new Error('Invalid photo information.');
+        error.status = 400;
+        throw error;
+    }
+
+    if (value.length > 10) {
+        const error = new Error(
+            'You can upload a maximum of 10 photos.'
+        );
+
+        error.status = 400;
+        throw error;
+    }
+
+    const cloudName = process.env.CLOUDINARY_CLOUD_NAME;
+
+    const hasInvalidUrl = value.some((photoUrl) => {
+        if (typeof photoUrl !== 'string') {
+            return true;
+        }
+
+        try {
+            const parsedUrl = new URL(photoUrl);
+
+            return !(
+                parsedUrl.protocol === 'https:' &&
+                parsedUrl.hostname === 'res.cloudinary.com' &&
+                parsedUrl.pathname.startsWith(
+                    `/${cloudName}/image/upload/`
+                )
+            );
+        } catch {
+            return true;
+        }
+    });
+
+    if (hasInvalidUrl) {
+        const error = new Error(
+            'One or more uploaded photo URLs are invalid.'
+        );
+
+        error.status = 400;
+        throw error;
+    }
+
+    return value;
+}
+
+
 
 function uploadImageBuffer(fileBuffer) {
     return new Promise((resolve, reject) => {
@@ -36,8 +147,58 @@ function generateSlug(senderName, receiverName) {
     return `${base}-${random}`;
 }
 
+
+
+router.post(
+    '/upload-signature',
+    authMiddleware,
+    (req, res) => {
+        try {
+            ensureCloudinaryConfigured();
+
+            const timestamp = Math.floor(Date.now() / 1000);
+            const folder = `eventcraft/users/${req.user.id}`;
+
+            const signature =
+                cloudinary.utils.api_sign_request(
+                    {
+                        timestamp,
+                        folder
+                    },
+                    process.env.CLOUDINARY_API_SECRET
+                );
+
+            return res.status(200).json({
+                timestamp,
+                signature,
+                folder,
+                cloudName:
+                    process.env.CLOUDINARY_CLOUD_NAME,
+                apiKey:
+                    process.env.CLOUDINARY_API_KEY
+            });
+        } catch (error) {
+            console.error(
+                'Cloudinary signature error:',
+                error
+            );
+
+            return res
+                .status(error.status || 500)
+                .json({
+                    error:
+                        error.message ||
+                        'Unable to prepare photo upload.'
+                });
+        }
+    }
+);
+
 // Create new event
-router.post('/', authMiddleware, upload.array('photos', 10), async (req, res) => {
+router.post(
+    '/',
+    authMiddleware,
+    async (req, res) => {
     const connection = await pool.getConnection();
 
     try {
@@ -53,92 +214,157 @@ router.post('/', authMiddleware, upload.array('photos', 10), async (req, res) =>
             theme,
             enabledPages,
             customPageTitle,
-            customPageBody
+            customPageBody,
+            photoUrls
         } = req.body;
 
         // Validation
-        if (!senderName || !receiverName) {
-            await connection.rollback();
-            return res.status(400).json({ error: 'Sender name and receiver name are required' });
-        }
+        
 
-        // Generate unique slug
-        const slug = generateSlug(senderName, receiverName);
+        if (
+                !String(senderName || '').trim() ||
+                !String(receiverName || '').trim()
+            ) {
+                const error = new Error(
+                    'Sender name and receiver name are required.'
+                );
 
-        // Insert event
-        const [eventResult] = await connection.query(
-            `INSERT INTO events (slug, event_type, sender_name, receiver_name, relationship, event_date, main_message, theme, enabled_pages, user_id)
-             VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?)`,
-            [
-                slug,
-                eventType || 'birthday',
+                error.status = 400;
+                throw error;
+            }
+
+            const normalizedEnabledPages =
+                normalizeEnabledPages(enabledPages);
+
+            const selectedPage =
+                normalizedEnabledPages[1];
+
+            if (
+                selectedPage === 'custom' &&
+                !String(customPageTitle || '').trim()
+            ) {
+                const error = new Error(
+                    'Please provide a title for the custom page.'
+                );
+
+                error.status = 400;
+                throw error;
+            }
+
+            const normalizedPhotoUrls =
+                normalizePhotoUrls(photoUrls);
+
+            const slug = generateSlug(
                 senderName,
-                receiverName,
-                relationship || '',
-                date || null,
-                mainMessage || '',
-                theme || 'elegant',
-                enabledPages || JSON.stringify(['home']),
-                req.user.id
-            ]
-        );
-
-        const eventId = eventResult.insertId;
-
-        // Insert photos if any
-if (req.files && req.files.length > 0) {
-    const uploadedImages = await Promise.all(
-        req.files.map((file) =>
-            uploadImageBuffer(file.buffer)
-        )
-    );
-
-    const photoPromises = uploadedImages.map(
-        (uploadedImage, index) =>
-            connection.query(
-                `INSERT INTO event_photos
-                    (event_id, photo_url, upload_order)
-                 VALUES (?, ?, ?)`,
-                [
-                    eventId,
-                    uploadedImage.secure_url,
-                    index
-                ]
-            )
-    );
-
-    await Promise.all(photoPromises);
-}
-
-        // Insert custom page if provided
-        if (customPageTitle || customPageBody) {
-            await connection.query(
-                'INSERT INTO custom_pages (event_id, title, body) VALUES (?, ?, ?)',
-                [eventId, customPageTitle || '', customPageBody || '']
+                receiverName
             );
+
+            const [eventResult] =
+                await connection.query(
+                    `INSERT INTO events (
+                        slug,
+                        event_type,
+                        sender_name,
+                        receiver_name,
+                        relationship,
+                        event_date,
+                        main_message,
+                        theme,
+                        enabled_pages,
+                        user_id
+                    )
+                    VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?)`,
+                    [
+                        slug,
+                        eventType || 'birthday',
+                        senderName.trim(),
+                        receiverName.trim(),
+                        relationship || '',
+                        date || null,
+                        mainMessage || '',
+                        theme || 'elegant',
+                        JSON.stringify(
+                            normalizedEnabledPages
+                        ),
+                        req.user.id
+                    ]
+                );
+
+            const eventId = eventResult.insertId;
+
+            for (
+                let index = 0;
+                index < normalizedPhotoUrls.length;
+                index += 1
+            ) {
+                await connection.query(
+                    `INSERT INTO event_photos (
+                        event_id,
+                        photo_url,
+                        upload_order
+                    )
+                    VALUES (?, ?, ?)`,
+                    [
+                        eventId,
+                        normalizedPhotoUrls[index],
+                        index
+                    ]
+                );
+            }
+
+            if (selectedPage === 'custom') {
+                await connection.query(
+                    `INSERT INTO custom_pages (
+                        event_id,
+                        title,
+                        body
+                    )
+                    VALUES (?, ?, ?)`,
+                    [
+                        eventId,
+                        customPageTitle.trim(),
+                        customPageBody || ''
+                    ]
+                );
+            }
+
+            await connection.query(
+                `INSERT INTO event_stats (
+                    event_slug,
+                    views
+                )
+                VALUES (?, ?)`,
+                [slug, 0]
+            );
+
+            await connection.commit();
+
+            return res.status(201).json({
+                slug,
+                eventId,
+                message: 'Event created successfully'
+            });
+        } catch (error) {
+            await connection.rollback();
+
+            console.error(
+                'Create event error:',
+                error
+            );
+
+            return res
+                .status(error.status || 500)
+                .json({
+                    error:
+                        error.status
+                            ? error.message
+                            : 'Failed to create event'
+                });
+        } finally {
+            connection.release();
         }
-
-        // Create event stats entry
-        await connection.query(
-            'INSERT INTO event_stats (event_slug, views) VALUES (?, ?)',
-            [slug, 0]
-        );
-
-        await connection.commit();
-
-        res.status(201).json({
-            slug,
-            eventId,
-            message: 'Event created successfully'
-        });
-    } catch (error) {
-        await connection.rollback();
-        console.error('Create event error:', error);
-        res.status(500).json({ error: 'Failed to create event' });
-    } finally {
-        connection.release();
     }
-});
+);
 
 // Get event by slug (public or authenticated)
 router.get('/:slug', optionalAuthMiddleware, async (req, res) => {
@@ -477,6 +703,7 @@ router.get('/:id/analytics', authMiddleware, async (req, res) => {
             error: 'Failed to retrieve event analytics'
         });
     }
-});
+}
+);
 
 module.exports = router;

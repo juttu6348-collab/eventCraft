@@ -10,12 +10,13 @@ import WizardProgressBar from '../components/UI/WizardProgressBar';
 import WizardNavigation from '../components/UI/WizardNavigation';
 import SmartSuggestions from '../components/UI/SmartSuggestions';
 import { useUI } from '../context/UIContext';
-import { useAuth } from '../context/AuthContext';
+
+const MAX_PHOTOS = 10;
+const MAX_PHOTO_SIZE_BYTES = 5 * 1024 * 1024;
 
 function CreateEventForm() {
     const { eventType } = useParams();
     const navigate = useNavigate();
-    const { user } = useAuth();
     const [searchParams] = useSearchParams();
     const urlTheme = searchParams.get('theme');
 
@@ -34,18 +35,12 @@ function CreateEventForm() {
         date: '',
         mainMessage: '',
         theme: urlTheme || 'elegant',
-        enabledPages: ['home', 'letter'],
+        enabledPages: ['home'],
         photos: [],
         customPageData: { title: '', body: '' }
     });
 
-    const relationships = [
-        'Friend', 'Best Friend', 'Brother', 'Sister', 'Mother', 'Father',
-        'Husband', 'Wife', 'Fiancé', 'Fiancée', 'Boyfriend', 'Girlfriend',
-        'Son', 'Daughter', 'Colleague', 'Boss', 'Teacher', 'Student',
-        'Cousin', 'Aunt', 'Uncle', 'Grandparent', 'Grandmother', 'Grandfather',
-        'Niece', 'Nephew', 'Mentor', 'Partner', 'Other'
-    ];
+
 
 
 
@@ -53,7 +48,7 @@ function CreateEventForm() {
     const hasCheckedDraft = useRef(false);
 
     // Load draft on component mount
-useEffect(() => {
+    useEffect(() => {
   const checkDraft = async () => {
     try {
       if (!hasDraft()) {
@@ -90,6 +85,9 @@ useEffect(() => {
         setFormData((currentFormData) => ({
           ...currentFormData,
           ...draft,
+
+          // Always let the user make a fresh Step 4 selection.
+          enabledPages: ['home'],
 
           // Browser File objects cannot safely be restored from localStorage.
           photos: [],
@@ -150,8 +148,8 @@ useEffect(() => {
         },
         {
             id: 4,
-            title: 'Select Pages',
-            description: 'Choose content',
+            title: 'Select Page',
+            description: 'Choose one page',
             icon: '📄'
         }
     ];
@@ -166,10 +164,20 @@ useEffect(() => {
             case 3:
                 return true; // Photos are optional
             case 4: {
-                const hasPages = formData.enabledPages.length >= 2;
-                const customValid = !formData.enabledPages.includes('custom') ||
-                    formData.customPageData.title.trim();
-                return hasPages && customValid;
+                const selectedAdditionalPages = formData.enabledPages.filter(
+                    (pageId) => pageId !== 'home'
+                );
+
+                const hasExactlyOneAdditionalPage =
+                    selectedAdditionalPages.length === 1;
+
+                const selectedPage = selectedAdditionalPages[0];
+
+                const customPageIsValid =
+                    selectedPage !== 'custom' ||
+                    Boolean(formData.customPageData.title.trim());
+
+                return hasExactlyOneAdditionalPage && customPageIsValid;
             }
             default:
                 return false;
@@ -207,9 +215,46 @@ useEffect(() => {
         }
     };
 
-    const handlePhotoUpload = (e) => {
-        const files = Array.from(e.target.files).slice(0, 10);
-        setFormData(prev => ({ ...prev, photos: files }));
+    const handlePhotoUpload = (event) => {
+        const selectedFiles = Array.from(event.target.files || []);
+
+        setError('');
+
+        if (selectedFiles.length > MAX_PHOTOS) {
+            setError(`You can upload a maximum of ${MAX_PHOTOS} photos.`);
+            event.target.value = '';
+            return;
+        }
+
+        const invalidFile = selectedFiles.find(
+            (file) => file.type && !file.type.startsWith('image/')
+        );
+
+        if (invalidFile) {
+            setError(`"${invalidFile.name}" is not a valid image.`);
+            event.target.value = '';
+            return;
+        }
+
+        const oversizedFile = selectedFiles.find(
+            (file) => file.size > MAX_PHOTO_SIZE_BYTES
+        );
+
+        if (oversizedFile) {
+            setError(
+                `"${oversizedFile.name}" exceeds the maximum size of 5 MB.`
+            );
+            event.target.value = '';
+            return;
+        }
+
+        setFormData((previousFormData) => ({
+            ...previousFormData,
+            photos: selectedFiles
+        }));
+
+        // Allows the same file to be selected again after removal.
+        event.target.value = '';
     };
 
     const removePhoto = (index) => {
@@ -219,16 +264,17 @@ useEffect(() => {
         }));
     };
 
-    const togglePage = (pageId) => {
-        setFormData(prev => {
-            const enabled = prev.enabledPages.includes(pageId);
-            return {
-                ...prev,
-                enabledPages: enabled
-                    ? prev.enabledPages.filter(p => p !== pageId)
-                    : [...prev.enabledPages, pageId]
-            };
-        });
+    const selectSinglePage = (pageId) => {
+        if (pageId === 'home') {
+            return;
+        }
+
+        setError('');
+
+        setFormData((previousFormData) => ({
+            ...previousFormData,
+            enabledPages: ['home', pageId]
+        }));
     };
 
     const handleSubmit = async (e) => {
@@ -247,9 +293,16 @@ useEffect(() => {
             return;
         }
 
-        if (formData.enabledPages.length < 2) {
-            setError('Please select at least one additional page besides Home');
-            window.scrollTo({ top: document.querySelector('.card-dark')?.offsetTop - 100, behavior: 'smooth' });
+        const selectedAdditionalPages = formData.enabledPages.filter(
+            (pageId) => pageId !== 'home'
+        );
+
+        if (selectedAdditionalPages.length !== 1) {
+            setError(
+                'Please select exactly one page. Home is included automatically.'
+            );
+            setCurrentStep(4);
+            window.scrollTo({ top: 0, behavior: 'smooth' });
             return;
         }
 
@@ -509,11 +562,13 @@ useEffect(() => {
                                     <label className="btn btn-outline-light w-100 py-4 d-flex flex-column align-items-center gap-2 photo-upload-label">
                                         <Upload size={32} />
                                         <span>Click to upload photos or drag and drop</span>
-                                        <small className="text-muted-light">PNG, JPG up to 10 files</small>
+                                        <small className="text-muted-light">
+                                            Select image files • Maximum 5 MB per image • Up to 10 images
+                                        </small>
                                         <input
                                             type="file"
                                             multiple
-                                            accept="image/*"
+                                            accept="image/*,.heic,.heif,.avif,.bmp,.tif,.tiff,.svg"
                                             onChange={handlePhotoUpload}
                                             className="d-none"
                                         />
@@ -548,22 +603,47 @@ useEffect(() => {
                         {/* Step 4: Select Pages */}
                         {currentStep === 4 && (
                             <div className="glass-card p-4 p-md-5 mb-4 wizard-step-content">
-                                <h4 className="fw-semibold mb-4">Choose Pages to Include</h4>
+                                <h4 className="fw-semibold mb-2">Choose One Page to Include</h4>
+                                <p className="text-muted-light mb-4">
+                                    Home is always included. Select only one additional page.
+                                </p>
 
                                 <div className="row g-3">
-                                    {pages.map(page => (
+                                    {pages.map((page) => (
                                         <div key={page.id} className="col-md-6">
                                             <div
                                                 className={`card p-3 hover-lift page-selection-card ${page.disabled ? 'disabled' : ''} ${formData.enabledPages.includes(page.id) ? 'page-card-selected' : 'card-dark'}`}
-                                                onClick={() => !page.disabled && togglePage(page.id)}
+                                                onClick={() => {
+                                                    if (!page.disabled) {
+                                                        selectSinglePage(page.id);
+                                                    }
+                                                }}
+                                                role={page.disabled ? undefined : 'radio'}
+                                                aria-checked={page.disabled ? undefined : formData.enabledPages.includes(page.id)}
+                                                tabIndex={page.disabled ? -1 : 0}
+                                                onKeyDown={(event) => {
+                                                    if (
+                                                        !page.disabled &&
+                                                        (event.key === 'Enter' || event.key === ' ')
+                                                    ) {
+                                                        event.preventDefault();
+                                                        selectSinglePage(page.id);
+                                                    }
+                                                }}
                                             >
                                                 <div className="d-flex align-items-start gap-2">
                                                     <input
-                                                        type="checkbox"
+                                                        type={page.disabled ? 'checkbox' : 'radio'}
+                                                        name={page.disabled ? undefined : 'selectedEventPage'}
                                                         className="form-check-input mt-1"
                                                         checked={formData.enabledPages.includes(page.id)}
                                                         disabled={page.disabled}
-                                                        readOnly
+                                                        onChange={() => {
+                                                            if (!page.disabled) {
+                                                                selectSinglePage(page.id);
+                                                            }
+                                                        }}
+                                                        onClick={(event) => event.stopPropagation()}
                                                     />
                                                     <div className="flex-grow-1">
                                                         <h6 className="mb-1">{page.name}</h6>

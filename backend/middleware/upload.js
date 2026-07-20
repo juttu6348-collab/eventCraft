@@ -1,30 +1,35 @@
 const multer = require('multer');
 
-const allowedMimeTypes = new Set([
-    'image/jpeg',
-    'image/png',
-    'image/webp',
-    'image/gif'
-]);
+const MAX_PHOTO_SIZE_BYTES = 5 * 1024 * 1024;
+const MAX_PHOTOS = 10;
 
 const upload = multer({
     storage: multer.memoryStorage(),
 
     limits: {
-        fileSize: 5 * 1024 * 1024,
-        files: 10
+        fileSize: MAX_PHOTO_SIZE_BYTES,
+        files: MAX_PHOTOS
     },
 
-    fileFilter: (req, file, callback) => {
-        if (!allowedMimeTypes.has(file.mimetype)) {
-            return callback(
-                new Error(
-                    'Only JPEG, PNG, WebP and GIF images are allowed'
-                )
+    fileFilter: (_req, file, callback) => {
+        const mimeType =
+            typeof file.mimetype === 'string'
+                ? file.mimetype.toLowerCase()
+                : '';
+
+        const isImage = mimeType.startsWith('image/');
+
+        if (!isImage) {
+            const error = new Error(
+                `"${file.originalname}" is not a valid image file.`
             );
+
+            error.code = 'INVALID_IMAGE_TYPE';
+
+            return callback(error);
         }
 
-        callback(null, true);
+        return callback(null, true);
     }
 });
 
